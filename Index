@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewLuck HR · Premium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <!-- Google Identity & API -->
+  <script src="https://accounts.google.com/gsi/client"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <style>
+    /* ===== PREMIUM CSS (same as before, with additional card styles) ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f2f6;
+      color: #1a1a2e;
+      transition: background .3s, color .3s;
+      min-height: 100vh;
+    }
+    body.dark {
+      background: #121212;
+      color: #e0e0e0;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1a237e;
+      border-radius: 10px;
+    }
+    body.dark ::-webkit-scrollbar-thumb {
+      background: #3949ab;
+    }
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px 24px;
+    }
+    .flex {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .mt-2 {
+      margin-top: 24px;
+    }
+    .mb-2 {
+      margin-bottom: 24px;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+      padding: 24px 28px;
+      transition: all .25s ease;
+    }
+    body.dark .glass {
+      background: rgba(30, 30, 40, 0.7);
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    .glass:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all .2s;
+      background: #e0e0e0;
+      color: #1a1a2e;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #1a237e, #3949ab);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(26, 35, 126, 0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(26, 35, 126, 0.4);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #00c853, #00e676);
+      color: #fff;
+    }
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 200, 83, 0.4);
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #d50000, #ff1744);
+      color: #fff;
+    }
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(213, 0, 0, 0.4);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #1a237e;
+      color: #1a237e;
+    }
+    body.dark .btn-outline {
+      border-color: #9fa8da;
+      color: #9fa8da;
+    }
+    .btn-sm {
+      padding: 8px 18px;
+      font-size: 12px;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .input {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 16px;
+      border: 1px solid #d0d0d0;
+      background: #fff;
+      font-size: 16px;
+      transition: border .2s, background .2s;
+      color: #1a1a2e;
+    }
+    body.dark .input {
+      background: #2a2a2a;
+      border-color: #444;
+      color: #eee;
+    }
+    .input:focus {
+      outline: none;
+      border-color: #1a237e;
+      box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.2);
+    }
+    .input-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231a237e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 16px;
+      cursor: pointer;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 40px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .badge-success {
+      background: rgba(0, 200, 83, 0.18);
+      color: #00c853;
+    }
+    .badge-danger {
+      background: rgba(213, 0, 0, 0.16);
+      color: #d50000;
+    }
+    .badge-warning {
+      background: rgba(255, 145, 0, 0.18);
+      color: #ff9100;
+    }
+    .badge-info {
+      background: rgba(41, 121, 255, 0.16);
+      color: #2979ff;
+    }
+    .badge-neutral {
+      background: rgba(0, 0, 0, 0.06);
+      color: #666;
+    }
+    body.dark .badge-neutral {
+      background: rgba(255, 255, 255, 0.08);
+      color: #aaa;
+    }
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #d0d0d0;
+    }
+    body.dark .timeline::before {
+      background: #444;
+    }
+    .timeline-item {
+      position: relative;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid #1a237e;
+    }
+    body.dark .timeline-item {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .timeline-item .time {
+      font-size: 12px;
+      color: #888;
+    }
+    body.dark .timeline-item .time {
+      color: #aaa;
+    }
+    .timeline-item img {
+      max-width: 120px;
+      max-height: 120px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform .2s;
+      margin-top: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .timeline-item img:hover {
+      transform: scale(1.05);
+      border-color: #1a237e;
+    }
+
+    /* ==== NEW: AUDIT CARD STYLES ==== */
+    .audit-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    body.dark .audit-card {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.04);
+    }
+    .audit-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .audit-card-header .emp-name {
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .audit-card-header .date {
+      color: #888;
+      font-size: 14px;
+    }
+    .audit-photo-grid {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .audit-photo-item {
+      flex: 1 1 200px;
+      min-width: 150px;
+      text-align: center;
+    }
+    .audit-photo-item .label {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .audit-photo-item .time {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .audit-photo-item img {
+      width: 100%;
+      max-width: 180px;
+      height: auto;
+      border-radius: 16px;
+      cursor: pointer;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      transition: 0.2s;
+      object-fit: cover;
+      aspect-ratio: 1/1;
+    }
+    .audit-photo-item img:hover {
+      transform: scale(1.03);
+      border-color: #1a237e;
+    }
+    .audit-photo-item .no-photo {
+      width: 100%;
+      max-width: 180px;
+      aspect-ratio: 1/1;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      font-size: 13px;
+      border: 2px dashed #ccc;
+    }
+    .audit-total-hours {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #888;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      padding-top: 12px;
+    }
+    body.dark .audit-total-hours {
+      border-top-color: rgba(255, 255, 255, 0.06);
+    }
+
+    /* ==== NAVBAR ==== */
+    .navbar {
+      background: linear-gradient(135deg, #0d1442 0%, #1a237e 100%);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .navbar-actions .btn {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+    }
+    .navbar-actions .btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+    .navbar-actions .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      font-weight: 500;
+    }
+    .status-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    body.dark .status-list-item {
+      border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
+    .status-list-item:last-child {
+      border-bottom: none;
+    }
+    .photo-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+    .photo-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .photo-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      transform: scale(0.9);
+      transition: transform .3s;
+    }
+    .photo-modal.open img {
+      transform: scale(1);
+    }
+    .status-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .status-card .big-badge {
+      font-size: 20px;
+      padding: 8px 24px;
+      border-radius: 40px;
+    }
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .navbar {
+        padding: 12px 16px;
+      }
+      .container {
+        padding: 12px 16px;
+      }
+      .glass {
+        padding: 18px;
+      }
+      .audit-photo-grid {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-in {
+      animation: fadeSlideUp .4s ease forwards;
+    }
+    .delay-1 {
+      animation-delay: .1s;
+    }
+    .delay-2 {
+      animation-delay: .2s;
+    }
+    .delay-3 {
+      animation-delay: .3s;
+    }
+    .login-box {
+      max-width: 420px;
+      width: 100%;
+      padding: 48px 40px;
+      animation: fadeSlideUp .5s ease;
+    }
+    .login-box .logo {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+    .login-box h2 {
+      font-weight: 800;
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+    .login-box .sub {
+      color: #888;
+      margin-bottom: 28px;
+    }
+    .notif-badge {
+      position: relative;
+    }
+    .notif-badge .count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #d50000;
+      color: #fff;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    #notificationPanel {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      width: 380px;
+      max-height: 500px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+      z-index: 200;
+      padding: 16px 20px;
+      overflow-y: auto;
+      display: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    body.dark #notificationPanel {
+      background: rgba(30, 30, 40, 0.95);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+    #notificationPanel .notif-item {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    body.dark #notificationPanel .notif-item {
+      border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+    #notificationPanel .notif-item:last-child {
+      border-bottom: none;
+    }
+    .notif-time {
+      font-size: 11px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== LOGIN ===== -->
+  <div id="loginScreen" class="container" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
+    <div class="glass login-box">
+      <div class="flex" style="justify-content:space-between;margin-bottom:24px;">
+        <span class="logo">🏢</span>
+        <button onclick="toggleDark()" class="btn btn-sm btn-outline">🌓</button>
+      </div>
+      <h2>NewLuck HR</h2>
+      <p class="sub">Premium attendance & audit system</p>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <input type="email" id="emailInput" class="input" placeholder="Email" required style="margin-bottom:16px;" />
+        <input type="password" id="passInput" class="input" placeholder="Password" required style="margin-bottom:24px;" />
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Sign In</button>
+        <div id="loginError" style="color:#d50000;margin-top:12px;font-size:14px;text-align:center;"></div>
+      </form>
+      <div style="margin-top:24px;font-size:13px;color:#888;text-align:center;border-top:1px solid rgba(0,0,0,0.06);padding-top:20px;">
+        Demo: <strong>hr@newluck.com</strong> / password
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div id="appScreen" class="hidden">
+    <nav class="navbar">
+      <div class="navbar-brand"><span>🏢</span> NewLuck HR</div>
+      <div class="navbar-actions">
+        <span class="user-badge">
+          <span id="userNameDisplay" style="font-weight:600;">User</span>
+          <span id="roleBadge" class="badge badge-info" style="background:rgba(255,255,255,0.15);color:#fff;">Employee</span>
+        </span>
+        <span class="notif-badge" onclick="toggleNotifications()" style="cursor:pointer;color:#fff;">
+          <span class="material-icons">notifications</span>
+          <span class="count" id="notifCount" style="display:none;">0</span>
+        </span>
+        <button onclick="logout()" class="btn btn-sm">🚪 Logout</button>
+        <button onclick="toggleDark()" class="btn btn-sm">🌓</button>
+      </div>
+    </nav>
+
+    <div id="notificationPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <strong>🔔 Real‑time Alerts</strong>
+        <span onclick="document.getElementById('notificationPanel').style.display='none'" style="cursor:pointer;">✕</span>
+      </div>
+      <div id="notifList"></div>
+    </div>
+
+    <div class="container" style="padding-top:28px;">
+
+      <!-- ===== HR / OWNER DASHBOARD ===== -->
+      <div id="hrDashboard" class="hidden">
+        <div class="grid-3 animate-in delay-1">
+          <div class="glass">
+            <div class="flex" style="justify-content:space-between;">
+              <span style="font-weight:600;">👥 Total Employees</span>
+              <span class="material-icons" style="color:#1a237e;">people</span>
+            </div>
+            <div style="font-size:36px;font-weight:800;margin-top:6px;" id="totalEmployees">0</div>
+          </div>
+          <div class="glass">
+            <div class="flex" style="justify-content:space-between;">
+              <span style="font-weight:600;">🟢 Present Today</span>
+              <span class="material-icons" style="color:#00c853;">check_circle</span>
+            </div>
+            <div style="font-size:36px;font-weight:800;margin-top:6px;" id="presentToday">0</div>
+          </div>
+          <div class="glass">
+            <div class="flex" style="justify-content:space-between;">
+              <span style="font-weight:600;">📸 Pending Verifications</span>
+              <span class="material-icons" style="color:#ff9100;">pending</span>
+            </div>
+            <div style="font-size:36px;font-weight:800;margin-top:6px;" id="pendingVerifications">0</div>
+          </div>
+        </div>
+
+        <!-- Employee Selector + Card Audit Log -->
+        <div class="glass animate-in delay-2" style="margin-top:24px;">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-bottom:20px;">
+            <label style="font-weight:600;">👤 Select Employee:</label>
+            <select id="employeeSelect" class="input input-select" style="width:auto;min-width:220px;padding:10px 18px;" onchange="onEmployeeSelect()">
+              <option value="">— Choose —</option>
+            </select>
+            <span style="font-size:13px;color:#888;">(IN/OUT card view with photos)</span>
+          </div>
+          <div id="auditLogContainer">
+            <p style="color:#888;">Select an employee to view their attendance audit cards.</p>
+          </div>
+        </div>
+
+        <!-- Live Status -->
+        <div class="glass animate-in delay-3" style="margin-top:24px;">
+          <div class="flex" style="justify-content:space-between;margin-bottom:12px;">
+            <h3 style="font-weight:700;">🏭 Live Workshop Status</h3>
+            <span class="badge badge-success" id="liveCount">0 employees</span>
+          </div>
+          <div id="liveStatusList" style="max-height:300px;overflow-y:auto;">
+            <p style="color:#888;">Loading live status...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SUPERVISOR DASHBOARD ===== -->
+      <div id="supDashboard" class="hidden">
+        <div class="glass animate-in">
+          <h3 style="font-weight:700;">👔 Supervisor Dashboard</h3>
+          <p style="color:#888;margin-bottom:16px;">Your team's live status.</p>
+          <div id="supLiveStatus" style="max-height:400px;overflow-y:auto;">
+            <p>Loading team data...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== EMPLOYEE DASHBOARD ===== -->
+      <div id="empDashboard" class="hidden">
+        <div class="grid-2 animate-in">
+          <div class="glass">
+            <h3 style="font-weight:700;margin-bottom:12px;">⚡ Your Status</h3>
+            <div class="status-card">
+              <span id="empStatusBadge" class="badge badge-success big-badge">🟢 In Workshop</span>
+              <span id="empCheckInTime" style="color:#888;font-size:14px;">—</span>
+            </div>
+            <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+              <div><span style="color:#888;">Worked</span><br><strong id="empWorkedHours">0.0</strong><span style="font-size:13px;color:#888;"> / 9h</span></div>
+              <div><span style="color:#888;">Remaining</span><br><strong id="empRemaining">9.0</strong><span style="font-size:13px;color:#888;"> h</span></div>
+              <div><span style="color:#888;">Status</span><br><span id="empStatusText" style="font-weight:600;">Idle</span></div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px;">
+              <button onclick="empCheckIn()" class="btn btn-success" id="checkInBtn">📷 Check In</button>
+              <button onclick="empCheckOut()" class="btn btn-danger" id="checkOutBtn" disabled>📷 Check Out</button>
+              <button onclick="empBreakStart()" class="btn btn-outline" id="breakBtn" disabled>🍴 Break</button>
+              <button onclick="empOutsideStart()" class="btn btn-outline" id="outsideBtn" disabled>🏢 Outside</button>
+            </div>
+          </div>
+          <div class="glass">
+            <h3 style="font-weight:700;margin-bottom:12px;">🏭 In Workshop Now</h3>
+            <div id="empLiveStatus" style="max-height:280px;overflow-y:auto;">
+              <p style="color:#888;">Loading...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass animate-in delay-2" style="margin-top:24px;">
+          <h3 style="font-weight:700;margin-bottom:12px;">📅 Your Recent Activity</h3>
+          <div id="empTimeline" class="timeline" style="max-height:320px;overflow-y:auto;">
+            <p style="color:#888;">No events yet.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHOTO MODAL ===== -->
+  <div id="photoModal" class="photo-modal" onclick="closePhotoModal()">
+    <img id="modalPhoto" src="" alt="Photo" />
+  </div>
+
+  <script>
+    // ============================================================
+    //  FIREBASE CONFIG (YOUR OWN)
+    // ============================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNOriYLY3suu4IWocqVmlMoSpIGPwqPwk",
+      authDomain: "newluckattendace.firebaseapp.com",
+      projectId: "newluckattendace",
+      storageBucket: "newluckattendace.firebasestorage.app",
+      messagingSenderId: "749927661938",
+      appId: "1:749927661938:web:44e8b2a273c428c630ddeb"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ============================================================
+    //  GOOGLE DRIVE API SETUP
+    // ============================================================
+    // 🔑 REPLACE WITH YOUR CLIENT ID (from Google Cloud Console)
+    const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+    const DRIVE_FOLDER_ID = '1jXxh3k_LYJ35ML5seYBep5TvNhsn2Yuq';
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+    let tokenClient = null;
+    let accessToken = null;
+
+    function initGoogleDrive() {
+      return new Promise((resolve) => {
+        if (typeof gapi === 'undefined') {
+          setTimeout(() => initGoogleDrive().then(resolve), 500);
+          return;
+        }
+        gapi.load('client', async () => {
+          await gapi.client.init({
+            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          });
+          tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: (resp) => {
+              if (resp.error) throw new Error(resp.error);
+              accessToken = resp.access_token;
+              resolve(accessToken);
+            },
+          });
+          if (accessToken) resolve(accessToken);
+          else resolve();
+        });
+      });
+    }
+
+    function getDriveToken() {
+      return new Promise((resolve, reject) => {
+        if (accessToken) {
+          resolve(accessToken);
+          return;
+        }
+        if (!tokenClient) {
+          reject('Google Drive not initialized');
+          return;
+        }
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+        const check = setInterval(() => {
+          if (accessToken) {
+            clearInterval(check);
+            resolve(accessToken);
+          }
+        }, 300);
+        setTimeout(() => {
+          clearInterval(check);
+          reject('Timeout getting access token');
+        }, 15000);
+      });
+    }
+
+    // ============================================================
+    //  IMAGE COMPRESSION
+    // ============================================================
+    function compressImage(file, maxWidth = 800, quality = 0.7) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width,
+              h = img.height;
+            if (w > maxWidth) {
+              h = (h * maxWidth) / w;
+              w = maxWidth;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            canvas.toBlob((blob) => {
+              resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+            }, 'image/jpeg', quality);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ============================================================
+    //  UPLOAD TO DRIVE
+    // ============================================================
+    async function uploadToDrive(file, eventType) {
+      await initGoogleDrive();
+      const token = await getDriveToken();
+      const compressed = await compressImage(file);
+      const metadata = {
+        name: `${eventType}_${Date.now()}.jpg`,
+        parents: [DRIVE_FOLDER_ID],
+      };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', compressed);
+
+      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: new Headers({ Authorization: 'Bearer ' + token }),
+        body: form,
+      });
+      const data = await response.json();
+      if (!data.id) throw new Error('Drive upload failed: ' + JSON.stringify(data));
+      return `https://drive.google.com/uc?export=view&id=${data.id}`;
+    }
+
+    // ============================================================
+    //  GLOBAL STATE
+    // ============================================================
+    let currentUser = null;
+    let currentRole = null;
+    let currentEmployeeData = null;
+    let allEmployees = [];
+    let selectedEmployeeId = null;
+    let liveStatusUnsubscribe = null;
+    let empEventsUnsubscribe = null;
+    let empLiveUnsubscribe = null;
+    let notifUnsubscribe = null;
+
+    // ============================================================
+    //  DOM REFS
+    // ============================================================
+    const loginScreen = document.getElementById('loginScreen');
+    const appScreen = document.getElementById('appScreen');
+    const loginError = document.getElementById('loginError');
+    const emailInput = document.getElementById('emailInput');
+    const passInput = document.getElementById('passInput');
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    const roleBadge = document.getElementById('roleBadge');
+    const hrDash = document.getElementById('hrDashboard');
+    const supDash = document.getElementById('supDashboard');
+    const empDash = document.getElementById('empDashboard');
+    const employeeSelect = document.getElementById('employeeSelect');
+    const auditLogContainer = document.getElementById('auditLogContainer');
+    const liveStatusList = document.getElementById('liveStatusList');
+    const totalEmployeesSpan = document.getElementById('totalEmployees');
+    const presentTodaySpan = document.getElementById('presentToday');
+    const pendingVerificationsSpan = document.getElementById('pendingVerifications');
+    const liveCount = document.getElementById('liveCount');
+    const empStatusBadge = document.getElementById('empStatusBadge');
+    const empCheckInTime = document.getElementById('empCheckInTime');
+    const empWorkedHours = document.getElementById('empWorkedHours');
+    const empRemaining = document.getElementById('empRemaining');
+    const empStatusText = document.getElementById('empStatusText');
+    const checkInBtn = document.getElementById('checkInBtn');
+    const checkOutBtn = document.getElementById('checkOutBtn');
+    const breakBtn = document.getElementById('breakBtn');
+    const outsideBtn = document.getElementById('outsideBtn');
+    const empTimeline = document.getElementById('empTimeline');
+    const empLiveStatus = document.getElementById('empLiveStatus');
+    const notifList = document.getElementById('notifList');
+    const notifCount = document.getElementById('notifCount');
+
+    // ============================================================
+    //  AUTH
+    // ============================================================
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const pass = passInput.value.trim();
+      loginError.textContent = '';
+      auth.signInWithEmailAndPassword(email, pass)
+        .catch(err => { loginError.textContent = err.message; });
+    }
+
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        currentUser = user;
+        const docRef = db.collection('employees').doc(user.uid);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+          currentEmployeeData = docSnap.data();
+          currentRole = currentEmployeeData.role || 'employee';
+        } else {
+          currentRole = 'employee';
+          currentEmployeeData = { name: user.displayName || 'Employee', role: 'employee' };
+          await db.collection('employees').doc(user.uid).set(currentEmployeeData);
+        }
+        loginScreen.classList.add('hidden');
+        appScreen.classList.remove('hidden');
+        userNameDisplay.textContent = currentEmployeeData.name || 'User';
+        roleBadge.textContent = currentRole.toUpperCase();
+        initDashboard();
+        if (currentRole === 'hr' || currentRole === 'owner') {
+          loadAllEmployees();
+          startLiveStatus();
+          startNotifications();
+        } else if (currentRole === 'supervisor') {
+          startSupervisorLive();
+          startNotifications();
+        } else {
+          startEmployeeLiveStatus();
+          loadEmployeeEvents();
+          loadTodayStatus();
+          startNotifications();
+        }
+      } else {
+        appScreen.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        if (liveStatusUnsubscribe) liveStatusUnsubscribe();
+        if (empEventsUnsubscribe) empEventsUnsubscribe();
+        if (empLiveUnsubscribe) empLiveUnsubscribe();
+        if (notifUnsubscribe) notifUnsubscribe();
+        currentUser = null;
+        currentRole = null;
+        currentEmployeeData = null;
+      }
+    });
+
+    function logout() { auth.signOut(); }
+
+    function initDashboard() {
+      hrDash.classList.add('hidden');
+      supDash.classList.add('hidden');
+      empDash.classList.add('hidden');
+      if (currentRole === 'hr' || currentRole === 'owner') {
+        hrDash.classList.remove('hidden');
+      } else if (currentRole === 'supervisor') {
+        supDash.classList.remove('hidden');
+      } else {
+        empDash.classList.remove('hidden');
+      }
+    }
+
+    // ============================================================
+    //  HR: LOAD EMPLOYEES
+    // ============================================================
+    async function loadAllEmployees() {
+      try {
+        const snapshot = await db.collection('employees').get();
+        allEmployees = [];
+        snapshot.forEach(doc => { allEmployees.push({ id: doc.id, ...doc.data() }); });
+        totalEmployeesSpan.textContent = allEmployees.length;
+        employeeSelect.innerHTML = '<option value="">— Choose —</option>';
+        allEmployees.forEach(emp => {
+          const opt = document.createElement('option');
+          opt.value = emp.id;
+          opt.textContent = `${emp.name} (${emp.department || 'N/A'})`;
+          employeeSelect.appendChild(opt);
+        });
+        const present = allEmployees.filter(e => e.status === 'active').length;
+        presentTodaySpan.textContent = present;
+        const pendingSnap = await db.collection('attendanceEvents').where('verification', '==', 'Pending').get();
+        pendingVerificationsSpan.textContent = pendingSnap.size;
+      } catch (err) { console.error(err); }
+    }
+
+    function onEmployeeSelect() {
+      const val = employeeSelect.value;
+      selectedEmployeeId = val;
+      if (val) loadAuditLog(val);
+      else auditLogContainer.innerHTML = '<p style="color:#888;">Select an employee to view their audit cards.</p>';
+    }
+
+    // ============================================================
+    //  NEW: CARD‑BASED AUDIT LOG
+    // ============================================================
+    async function loadAuditLog(empId) {
+      auditLogContainer.innerHTML = '<p style="color:#888;">Loading audit data...</p>';
+      try {
+        const eventsRef = db.collection('attendanceEvents')
+          .where('employeeId', '==', empId)
+          .orderBy('timestamp', 'asc'); // ascending to group by date
+        const snapshot = await eventsRef.get();
+        if (snapshot.empty) {
+          auditLogContainer.innerHTML = '<p style="color:#888;">No attendance events found.</p>';
+          return;
+        }
+
+        // Group events by date
+        const eventsByDate = {};
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const ts = data.timestamp ? data.timestamp.toDate() : new Date();
+          const dateStr = ts.toISOString().split('T')[0];
+          if (!eventsByDate[dateStr]) eventsByDate[dateStr] = [];
+          eventsByDate[dateStr].push({ ...data, timestamp: ts });
+        });
+
+        // Sort dates descending
+        const sortedDates = Object.keys(eventsByDate).sort((a, b) => b.localeCompare(a));
+
+        let html = '';
+        const empName = allEmployees.find(e => e.id === empId)?.name || 'Employee';
+
+        sortedDates.forEach(dateStr => {
+          const dayEvents = eventsByDate[dateStr];
+          // Find check-in and check-out events
+          const checkIn = dayEvents.find(e => e.type === 'checkIn');
+          const checkOut = dayEvents.find(e => e.type === 'checkOut');
+          // Compute total hours if both exist
+          let totalHours = null;
+          if (checkIn && checkOut) {
+            const inTime = checkIn.timestamp.getTime();
+            const outTime = checkOut.timestamp.getTime();
+            const diffMs = outTime - inTime;
+            totalHours = diffMs / (1000 * 60 * 60);
+          }
+
+          const displayDate = new Date(dateStr).toLocaleDateString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric'
+          });
+
+          html += `
+            <div class="audit-card">
+              <div class="audit-card-header">
+                <span class="emp-name">👤 ${empName}</span>
+                <span class="date">📅 ${displayDate}</span>
+              </div>
+              <div class="audit-photo-grid">
+                <!-- Check-in -->
+                <div class="audit-photo-item">
+                  <div class="label" style="color:#00c853;">✅ IN</div>
+                  <div class="time">${checkIn ? checkIn.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
+                  ${checkIn && checkIn.photoUrl ? `<img src="${checkIn.photoUrl}" alt="IN" onclick="openPhotoModal('${checkIn.photoUrl}')" />` :
+                    '<div class="no-photo">📷 No photo</div>'}
+                </div>
+                <!-- Check-out -->
+                <div class="audit-photo-item">
+                  <div class="label" style="color:#d50000;">❌ OUT</div>
+                  <div class="time">${checkOut ? checkOut.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
+                  ${checkOut && checkOut.photoUrl ? `<img src="${checkOut.photoUrl}" alt="OUT" onclick="openPhotoModal('${checkOut.photoUrl}')" />` :
+                    '<div class="no-photo">📷 No photo</div>'}
+                </div>
+              </div>
+              ${totalHours !== null ? `<div class="audit-total-hours">⏱️ Total: ${totalHours.toFixed(2)} hours</div>` :
+                (checkIn && !checkOut ? `<div class="audit-total-hours" style="color:#ff9100;">⏳ In progress – no checkout yet</div>` :
+                `<div class="audit-total-hours">⏱️ No complete check-in/out pair</div>`)}
+            </div>
+          `;
+        });
+
+        auditLogContainer.innerHTML = html || '<p style="color:#888;">No audit cards to display.</p>';
+      } catch (err) {
+        console.error(err);
+        auditLogContainer.innerHTML = '<p style="color:#d50000;">Error loading audit log.</p>';
+      }
+    }
+
+    // ============================================================
+    //  LIVE STATUS (HR)
+    // ============================================================
+    function startLiveStatus() {
+      if (liveStatusUnsubscribe) liveStatusUnsubscribe();
+      liveStatusUnsubscribe = db.collection('attendanceEvents')
+        .orderBy('timestamp', 'desc')
+        .limit(100)
+        .onSnapshot(snapshot => {
+          const latest = {};
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const empId = data.employeeId;
+            if (!latest[empId] || data.timestamp > latest[empId].timestamp) {
+              latest[empId] = { id: doc.id, ...data };
+            }
+          });
+          const list = Object.values(latest);
+          if (list.length === 0) {
+            liveStatusList.innerHTML = '<p style="color:#888;">No live events.</p>';
+            liveCount.textContent = '0 employees';
+            return;
+          }
+          let html = '';
+          let count = 0;
+          list.forEach(ev => {
+            const ts = ev.timestamp ? ev.timestamp.toDate() : new Date();
+            const timeAgo = timeSince(ts);
+            const empName = allEmployees.find(e => e.id === ev.employeeId)?.name || ev.employeeId;
+            const typeLabel = ev.type || 'event';
+            const isWorkshop = (ev.type === 'checkIn' && !ev.checkOut);
+            if (isWorkshop) count++;
+            html += `
+              <div class="status-list-item">
+                <span><strong>${empName}</strong> <span style="color:#888;font-size:13px;">${typeLabel}</span></span>
+                <span style="color:#888;font-size:13px;">${timeAgo}</span>
+              </div>
+            `;
+          });
+          liveStatusList.innerHTML = html;
+          liveCount.textContent = `${count} in workshop`;
+        });
+    }
+
+    function startSupervisorLive() {
+      const container = document.getElementById('supLiveStatus');
+      db.collection('attendanceEvents')
+        .orderBy('timestamp', 'desc')
+        .limit(50)
+        .onSnapshot(snapshot => {
+          let html = '';
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const ts = data.timestamp ? data.timestamp.toDate() : new Date();
+            html += `
+              <div class="status-list-item">
+                <span><strong>${data.employeeId}</strong> ${data.type}</span>
+                <span style="color:#888;font-size:13px;">${timeSince(ts)}</span>
+              </div>
+            `;
+          });
+          container.innerHTML = html || '<p>No team events.</p>';
+        });
+    }
+
+    // ============================================================
+    //  EMPLOYEE DASHBOARD
+    // ============================================================
+    let currentEmpStatus = 'idle';
+
+    function loadTodayStatus() {
+      const today = new Date().toISOString().split('T')[0];
+      const uid = currentUser.uid;
+      db.collection('attendance').doc(`${uid}_${today}`).get()
+        .then(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            const checkIn = data.checkIn ? data.checkIn.toDate() : null;
+            const checkOut = data.checkOut ? data.checkOut.toDate() : null;
+            const totalHours = data.totalWorkHours || 0;
+            const remaining = Math.max(0, 9 - totalHours);
+            empCheckInTime.textContent = checkIn ? checkIn.toLocaleTimeString() : '—';
+            empWorkedHours.textContent = totalHours.toFixed(1);
+            empRemaining.textContent = remaining.toFixed(1);
+            if (checkIn && !checkOut) {
+              currentEmpStatus = 'workshop';
+              empStatusBadge.textContent = '🟢 In Workshop';
+              empStatusBadge.className = 'badge badge-success big-badge';
+              empStatusText.textContent = 'Workshop';
+              checkInBtn.disabled = true;
+              checkOutBtn.disabled = false;
+              breakBtn.disabled = false;
+              outsideBtn.disabled = false;
+            } else if (checkIn && checkOut) {
+              currentEmpStatus = 'idle';
+              empStatusBadge.textContent = '✅ Completed';
+              empStatusBadge.className = 'badge badge-info big-badge';
+              empStatusText.textContent = 'Completed';
+              checkInBtn.disabled = true;
+              checkOutBtn.disabled = true;
+              breakBtn.disabled = true;
+              outsideBtn.disabled = true;
+            } else {
+              currentEmpStatus = 'idle';
+              empStatusBadge.textContent = '⏸️ Idle';
+              empStatusBadge.className = 'badge badge-neutral big-badge';
+              empStatusText.textContent = 'Idle';
+              checkInBtn.disabled = false;
+              checkOutBtn.disabled = true;
+              breakBtn.disabled = true;
+              outsideBtn.disabled = true;
+            }
+          } else {
+            currentEmpStatus = 'idle';
+            empStatusBadge.textContent = '⏸️ Idle';
+            empStatusBadge.className = 'badge badge-neutral big-badge';
+            empStatusText.textContent = 'Idle';
+            checkInBtn.disabled = false;
+            checkOutBtn.disabled = true;
+            breakBtn.disabled = true;
+            outsideBtn.disabled = true;
+            empCheckInTime.textContent = '—';
+            empWorkedHours.textContent = '0.0';
+            empRemaining.textContent = '9.0';
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function loadEmployeeEvents() {
+      if (empEventsUnsubscribe) empEventsUnsubscribe();
+      const uid = currentUser.uid;
+      empEventsUnsubscribe = db.collection('attendanceEvents')
+        .where('employeeId', '==', uid)
+        .orderBy('timestamp', 'desc')
+        .limit(20)
+        .onSnapshot(snapshot => {
+          if (snapshot.empty) {
+            empTimeline.innerHTML = '<p style="color:#888;">No recent activity.</p>';
+            return;
+          }
+          let html = '';
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const ts = data.timestamp ? data.timestamp.toDate() : new Date();
+            const timeStr = ts.toLocaleString();
+            const photoUrl = data.photoUrl || '';
+            const type = data.type || 'event';
+            html += `
+              <div class="timeline-item">
+                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+                  <span style="font-weight:600;text-transform:capitalize;">${type.replace(/([A-Z])/g, ' $1')}</span>
+                  <span class="time">${timeStr}</span>
+                </div>
+                ${photoUrl ? `<img src="${photoUrl}" alt="photo" onclick="openPhotoModal('${photoUrl}')" />` : ''}
+              </div>
+            `;
+          });
+          empTimeline.innerHTML = html;
+        });
+    }
+
+    function startEmployeeLiveStatus() {
+      if (empLiveUnsubscribe) empLiveUnsubscribe();
+      empLiveUnsubscribe = db.collection('attendanceEvents')
+        .orderBy('timestamp', 'desc')
+        .limit(30)
+        .onSnapshot(snapshot => {
+          const latest = {};
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const empId = data.employeeId;
+            if (!latest[empId] || data.timestamp > latest[empId].timestamp) {
+              latest[empId] = { id: doc.id, ...data };
+            }
+          });
+          const list = Object.values(latest).filter(ev => ev.type === 'checkIn' && !ev.checkOut);
+          if (list.length === 0) {
+            empLiveStatus.innerHTML = '<p style="color:#888;">No one in workshop.</p>';
+            return;
+          }
+          let html = '';
+          list.forEach(ev => {
+            const empName = allEmployees.find(e => e.id === ev.employeeId)?.name || ev.employeeId;
+            html += `<div class="status-list-item"><span>${empName}</span><span class="badge badge-success">🟢</span></div>`;
+          });
+          empLiveStatus.innerHTML = html;
+        });
+    }
+
+    // ============================================================
+    //  EMPLOYEE ACTIONS (with Drive upload)
+    // ============================================================
+    function empAction(eventType, firestoreUpdate) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const photoUrl = await uploadToDrive(file, eventType);
+          await firestoreUpdate(photoUrl);
+          loadTodayStatus();
+          loadEmployeeEvents();
+          await createNotification(eventType);
+        } catch (err) {
+          alert('Action failed: ' + err.message);
+        }
+      };
+      input.click();
+    }
+
+    function empCheckIn() {
+      empAction('checkIn', async (photoUrl) => {
+        const today = new Date().toISOString().split('T')[0];
+        await db.collection('attendance').doc(`${currentUser.uid}_${today}`).set({
+          employeeId: currentUser.uid,
+          date: today,
+          checkIn: firebase.firestore.FieldValue.serverTimestamp(),
+          totalWorkHours: 0,
+          status: 'present'
+        }, { merge: true });
+        await db.collection('attendanceEvents').add({
+          employeeId: currentUser.uid,
+          type: 'checkIn',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          photoUrl: photoUrl,
+          verification: 'Pending'
+        });
+      });
+    }
+
+    function empCheckOut() {
+      empAction('checkOut', async (photoUrl) => {
+        const today = new Date().toISOString().split('T')[0];
+        await db.collection('attendance').doc(`${currentUser.uid}_${today}`).update({
+          checkOut: firebase.firestore.FieldValue.serverTimestamp(),
+          status: 'completed'
+        });
+        await db.collection('attendanceEvents').add({
+          employeeId: currentUser.uid,
+          type: 'checkOut',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          photoUrl: photoUrl,
+          verification: 'Pending'
+        });
+      });
+    }
+
+    function empBreakStart() {
+      empAction('breakStart', async (photoUrl) => {
+        await db.collection('attendanceEvents').add({
+          employeeId: currentUser.uid,
+          type: 'breakStart',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          photoUrl: photoUrl,
+          verification: 'Pending'
+        });
+        currentEmpStatus = 'break';
+        empStatusBadge.textContent = '🍴 On Break';
+        empStatusBadge.className = 'badge badge-warning big-badge';
+        empStatusText.textContent = 'Break';
+        checkOutBtn.disabled = true;
+        breakBtn.disabled = true;
+        outsideBtn.disabled = true;
+      });
+    }
+
+    function empOutsideStart() {
+      empAction('outsideStart', async (photoUrl) => {
+        await db.collection('attendanceEvents').add({
+          employeeId: currentUser.uid,
+          type: 'outsideStart',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          photoUrl: photoUrl,
+          verification: 'Pending'
+        });
+        currentEmpStatus = 'outside';
+        empStatusBadge.textContent = '🔵 Outside Work';
+        empStatusBadge.className = 'badge badge-info big-badge';
+        empStatusText.textContent = 'Outside';
+        checkOutBtn.disabled = true;
+        breakBtn.disabled = true;
+        outsideBtn.disabled = true;
+      });
+    }
+
+    // ============================================================
+    //  NOTIFICATIONS
+    // ============================================================
+    async function createNotification(eventType) {
+      const message = `Employee ${currentEmployeeData.name} started ${eventType}`;
+      await db.collection('notifications').add({
+        employeeId: currentUser.uid,
+        employeeName: currentEmployeeData.name,
+        type: eventType,
+        message: message,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        read: false,
+      });
+    }
+
+    function startNotifications() {
+      if (notifUnsubscribe) notifUnsubscribe();
+      notifUnsubscribe = db.collection('notifications')
+        .orderBy('timestamp', 'desc')
+        .limit(20)
+        .onSnapshot(snapshot => {
+          let html = '';
+          let count = 0;
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            if (!data.read) count++;
+            const ts = data.timestamp ? data.timestamp.toDate() : new Date();
+            html += `
+              <div class="notif-item">
+                <div style="font-weight:500;">${data.message || 'Notification'}</div>
+                <div class="notif-time">${timeSince(ts)}</div>
+              </div>
+            `;
+          });
+          notifList.innerHTML = html || '<p style="color:#888;">No notifications</p>';
+          if (count > 0) {
+            notifCount.textContent = count;
+            notifCount.style.display = 'inline';
+          } else {
+            notifCount.style.display = 'none';
+          }
+        });
+    }
+
+    function toggleNotifications() {
+      const panel = document.getElementById('notificationPanel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // ============================================================
+    //  UTILITY
+    // ============================================================
+    function timeSince(date) {
+      const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+      let interval = Math.floor(seconds / 60);
+      if (interval < 1) return 'just now';
+      if (interval < 60) return interval + 'm ago';
+      interval = Math.floor(interval / 60);
+      if (interval < 24) return interval + 'h ago';
+      interval = Math.floor(interval / 24);
+      return interval + 'd ago';
+    }
+
+    function openPhotoModal(url) {
+      document.getElementById('modalPhoto').src = url;
+      document.getElementById('photoModal').classList.add('open');
+    }
+
+    function closePhotoModal() {
+      document.getElementById('photoModal').classList.remove('open');
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    }
+
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark');
+    }
+
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('notificationPanel');
+      const bell = document.querySelector('.notif-badge');
+      if (!panel.contains(e.target) && !bell.contains(e.target)) {
+        panel.style.display = 'none';
+      }
+      if (e.target.closest('.photo-modal')) closePhotoModal();
+    });
+
+    // Init Drive
+    window.onload = function() {
+      initGoogleDrive().catch(err => console.warn('Drive init:', err));
+    };
+
+    console.log('✅ NewLuck HR (Drive + Card Audit) ready!');
+  </script>
+</body>
+</html>
