@@ -14,7 +14,7 @@
   <script src="https://accounts.google.com/gsi/client"></script>
   <script src="https://apis.google.com/js/api.js"></script>
   <style>
-    /* ===== PREMIUM CSS (same as before, with additional card styles) ===== */
+    /* ===== PREMIUM CSS (glass, dark mode, responsive, cards) ===== */
     * {
       margin: 0;
       padding: 0;
@@ -258,8 +258,6 @@
       transform: scale(1.05);
       border-color: #1a237e;
     }
-
-    /* ==== NEW: AUDIT CARD STYLES ==== */
     .audit-card {
       background: rgba(255, 255, 255, 0.05);
       border-radius: 20px;
@@ -344,8 +342,6 @@
     body.dark .audit-total-hours {
       border-top-color: rgba(255, 255, 255, 0.06);
     }
-
-    /* ==== NAVBAR ==== */
     .navbar {
       background: linear-gradient(135deg, #0d1442 0%, #1a237e 100%);
       padding: 16px 32px;
@@ -732,8 +728,8 @@
     // ============================================================
     //  GOOGLE DRIVE API SETUP
     // ============================================================
-    // 🔑 REPLACE WITH YOUR CLIENT ID (from Google Cloud Console)
-    const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+    // ✅ YOUR CLIENT ID (already inserted)
+    const CLIENT_ID = '749927661938-qg5bcreeru19gn14p0053s0fk0pvm06q.apps.googleusercontent.com';
     const DRIVE_FOLDER_ID = '1jXxh3k_LYJ35ML5seYBep5TvNhsn2Yuq';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
@@ -993,21 +989,20 @@
     }
 
     // ============================================================
-    //  NEW: CARD‑BASED AUDIT LOG
+    //  CARD‑BASED AUDIT LOG
     // ============================================================
     async function loadAuditLog(empId) {
       auditLogContainer.innerHTML = '<p style="color:#888;">Loading audit data...</p>';
       try {
         const eventsRef = db.collection('attendanceEvents')
           .where('employeeId', '==', empId)
-          .orderBy('timestamp', 'asc'); // ascending to group by date
+          .orderBy('timestamp', 'asc');
         const snapshot = await eventsRef.get();
         if (snapshot.empty) {
           auditLogContainer.innerHTML = '<p style="color:#888;">No attendance events found.</p>';
           return;
         }
 
-        // Group events by date
         const eventsByDate = {};
         snapshot.forEach(doc => {
           const data = doc.data();
@@ -1017,7 +1012,6 @@
           eventsByDate[dateStr].push({ ...data, timestamp: ts });
         });
 
-        // Sort dates descending
         const sortedDates = Object.keys(eventsByDate).sort((a, b) => b.localeCompare(a));
 
         let html = '';
@@ -1025,10 +1019,8 @@
 
         sortedDates.forEach(dateStr => {
           const dayEvents = eventsByDate[dateStr];
-          // Find check-in and check-out events
           const checkIn = dayEvents.find(e => e.type === 'checkIn');
           const checkOut = dayEvents.find(e => e.type === 'checkOut');
-          // Compute total hours if both exist
           let totalHours = null;
           if (checkIn && checkOut) {
             const inTime = checkIn.timestamp.getTime();
@@ -1048,14 +1040,12 @@
                 <span class="date">📅 ${displayDate}</span>
               </div>
               <div class="audit-photo-grid">
-                <!-- Check-in -->
                 <div class="audit-photo-item">
                   <div class="label" style="color:#00c853;">✅ IN</div>
                   <div class="time">${checkIn ? checkIn.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
                   ${checkIn && checkIn.photoUrl ? `<img src="${checkIn.photoUrl}" alt="IN" onclick="openPhotoModal('${checkIn.photoUrl}')" />` :
                     '<div class="no-photo">📷 No photo</div>'}
                 </div>
-                <!-- Check-out -->
                 <div class="audit-photo-item">
                   <div class="label" style="color:#d50000;">❌ OUT</div>
                   <div class="time">${checkOut ? checkOut.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
@@ -1268,7 +1258,7 @@
     }
 
     // ============================================================
-    //  EMPLOYEE ACTIONS (with Drive upload)
+    //  EMPLOYEE ACTIONS
     // ============================================================
     function empAction(eventType, firestoreUpdate) {
       const input = document.createElement('input');
