@@ -3,1571 +3,1366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#1a237e">
-    <title>New Luck Attendance - Complete System</title>
+    <meta name="theme-color" content="#0f172a">
+    <title>AttendPro - Smart Attendance System</title>
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         :root {
-            --primary: #1a237e;
-            --primary-light: #3949ab;
-            --primary-dark: #0d1442;
-            --success: #00c853;
-            --danger: #ff1744;
-            --warning: #ff9100;
-            --info: #2979ff;
-            --background: #f5f6fa;
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #818cf8;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --purple: #8b5cf6;
+            --purple-light: #ede9fe;
+            --bg: #f1f5f9;
             --surface: #ffffff;
-            --text: #1a1a1a;
-            --text-secondary: #666666;
-            --border: #e0e0e0;
-            --shadow: 0 2px 10px rgba(0,0,0,0.08);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
-            --radius: 12px;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
+            --radius: 14px;
             --radius-lg: 20px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-xl: 28px;
         }
         
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--background);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
         
-        /* Splash Screen */
-        .splash-screen {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(135deg, #1a237e 0%, #0d1442 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: splashExit 0.5s ease 2s forwards;
+        /* Splash */
+        .splash {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #312e81 100%);
+            display: flex; align-items: center; justify-content: center;
+            animation: splashOut 0.6s ease 2.5s forwards;
         }
-        
-        .splash-content { text-align: center; color: white; }
-        .splash-logo { font-size: 80px; animation: bounce 1.5s infinite; }
-        .splash-title { font-size: 32px; font-weight: 800; margin: 20px 0 10px; letter-spacing: 1px; }
-        .splash-subtitle { font-size: 16px; opacity: 0.9; }
-        .splash-loader {
-            width: 40px; height: 40px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 30px auto 0;
+        .splash-inner { text-align: center; color: white; }
+        .splash-icon {
+            width: 100px; height: 100px; margin: 0 auto 30px;
+            background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+            border-radius: 30px; display: flex; align-items: center; justify-content: center;
+            font-size: 50px; animation: float 2s ease-in-out infinite;
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.4);
         }
+        .splash-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
+        .splash-subtitle { font-size: 15px; opacity: 0.7; font-weight: 300; }
+        .splash-loader { width: 50px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 40px auto 0; overflow: hidden; }
+        .splash-loader::after {
+            content: ''; display: block; width: 50%; height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+            border-radius: 2px; animation: load 1s ease-in-out infinite;
+        }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
+        @keyframes load { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+        @keyframes splashOut { to { opacity: 0; visibility: hidden; } }
         
-        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
-        @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
-        @keyframes splashExit { to { opacity: 0; visibility: hidden; } }
-        
-        /* Login Screen */
+        /* Login */
         .login-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 20px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #312e81 100%);
+            position: relative; overflow: hidden;
         }
-        
+        .login-screen::before {
+            content: ''; position: absolute; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(79,70,229,0.3), transparent);
+            top: -100px; right: -100px; border-radius: 50%;
+        }
+        .login-screen::after {
+            content: ''; position: absolute; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(139,92,246,0.3), transparent);
+            bottom: -50px; left: -50px; border-radius: 50%;
+        }
         .login-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 40px 30px;
-            max-width: 420px;
-            width: 100%;
-            box-shadow: var(--shadow-lg);
-            animation: slideUp 0.5s ease;
+            background: white; border-radius: var(--radius-xl); padding: 40px 35px;
+            max-width: 420px; width: 100%; position: relative; z-index: 1;
+            box-shadow: var(--shadow-xl); animation: slideUp 0.5s ease;
         }
-        
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-icon { font-size: 60px; margin-bottom: 15px; }
-        .login-title { font-size: 28px; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
-        .login-subtitle { font-size: 14px; color: var(--text-secondary); }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text); }
-        
-        .input-wrapper { position: relative; }
-        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; }
-        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .login-logo {
+            width: 70px; height: 70px; margin: 0 auto 20px;
+            background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            font-size: 35px; box-shadow: 0 10px 25px rgba(79,70,229,0.3);
+        }
+        .login-title { text-align: center; font-size: 26px; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.5px; }
+        .login-subtitle { text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+        .input-group { position: relative; }
+        .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; }
         .form-input {
-            width: 100%;
-            padding: 14px 15px 14px 45px;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 16px;
-            transition: var(--transition);
-            background: #fafafa;
+            width: 100%; padding: 14px 14px 14px 42px; border: 2px solid var(--border);
+            border-radius: 12px; font-size: 15px; font-family: inherit; transition: all 0.3s;
+            background: #fafbfc;
         }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.1);
-        }
-        
-        select.form-input { padding-left: 15px; }
-        textarea.form-input { padding-left: 15px; resize: vertical; }
-        
+        .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,0.1); background: white; }
         .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
+            width: 100%; padding: 15px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white;
+            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+            font-family: inherit; margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(79,70,229,0.3);
         }
-        
         .login-btn:active { transform: scale(0.98); }
-        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-hint { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 20px; }
         
-        /* App Layout */
-        .app-container { display: none; min-height: 100vh; }
-        .app-container.active { display: block; }
+        /* App */
+        .app { display: none; min-height: 100vh; }
+        .app.active { display: block; }
         
-        /* Top Bar */
-        .top-bar {
-            background: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* Header */
+        .header {
+            background: white; padding: 15px 20px; display: flex; align-items: center;
+            justify-content: space-between; position: sticky; top: 0; z-index: 100;
+            box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border);
         }
-        
-        .menu-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 5px; }
-        .top-title { font-size: 18px; font-weight: 700; color: var(--primary); }
-        
-        .top-actions { display: flex; gap: 15px; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .hamburger { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text); }
+        .header-title { font-size: 17px; font-weight: 700; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
         .logout-btn {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            background: var(--danger-light); color: var(--danger); border: none;
+            padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer;
+            font-size: 13px; font-family: inherit; transition: all 0.3s;
         }
+        .logout-btn:hover { background: var(--danger); color: white; }
         
         /* Sidebar */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background: white;
-            box-shadow: var(--shadow-lg);
-            transition: left 0.3s ease;
-            z-index: 200;
-            overflow-y: auto;
+            position: fixed; top: 0; left: -300px; width: 300px; height: 100%;
+            background: white; z-index: 200; transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: var(--shadow-xl); overflow-y: auto;
         }
         .sidebar.active { left: 0; }
-        
         .sidebar-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
+            background: linear-gradient(135deg, #0f172a, #312e81);
+            color: white; padding: 30px 25px; position: relative; overflow: hidden;
         }
-        
+        .sidebar-header::before {
+            content: ''; position: absolute; width: 150px; height: 150px;
+            background: rgba(139,92,246,0.2); border-radius: 50%; top: -50px; right: -50px;
+        }
         .sidebar-avatar {
-            width: 70px; height: 70px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            margin: 0 auto 15px;
+            width: 60px; height: 60px; border-radius: 18px;
+            background: linear-gradient(135deg, #4f46e5, #8b5cf6);
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px; font-weight: 800;
-            border: 3px solid white;
+            font-size: 24px; font-weight: 800; margin-bottom: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        
-        .sidebar-name { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
-        .sidebar-role { font-size: 14px; opacity: 0.9; }
-        
-        .sidebar-menu { padding: 20px 0; list-style: none; }
-        .sidebar-item {
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text);
-            border-left: 4px solid transparent;
-            transition: var(--transition);
+        .sidebar-name { font-size: 18px; font-weight: 700; }
+        .sidebar-role { font-size: 13px; opacity: 0.7; margin-top: 3px; }
+        .sidebar-menu { padding: 15px 0; list-style: none; }
+        .menu-item {
+            padding: 13px 20px; margin: 2px 10px; display: flex; align-items: center;
+            gap: 12px; cursor: pointer; border-radius: 12px; font-size: 14px;
+            font-weight: 500; color: var(--text-secondary); transition: all 0.2s;
+            position: relative;
         }
-        .sidebar-item:hover { background: #f5f5f5; }
-        .sidebar-item.active { background: #e8eaf6; border-left: 4px solid var(--primary); color: var(--primary); font-weight: 600; }
-        .sidebar-icon { font-size: 22px; width: 30px; text-align: center; }
-        
-        .sidebar-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 150;
-            display: none;
+        .menu-item:hover { background: var(--bg); color: var(--text); }
+        .menu-item.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white; box-shadow: 0 5px 15px rgba(79,70,229,0.3);
         }
+        .menu-icon { font-size: 20px; width: 25px; text-align: center; }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; display: none; }
         .sidebar-overlay.active { display: block; }
         
         /* Main Content */
-        .main-content { padding: 20px; padding-bottom: 80px; }
+        .main { padding: 20px; padding-bottom: 80px; max-width: 1200px; margin: 0 auto; }
         
         /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
         .stat-card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
+            background: white; border-radius: var(--radius); padding: 18px;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+            transition: all 0.3s; position: relative; overflow: hidden;
         }
-        .stat-card:active { transform: scale(0.98); }
-        .stat-icon { font-size: 28px; margin-bottom: 10px; }
-        .stat-value { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
-        .stat-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .stat-icon {
+            width: 40px; height: 40px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px;
+        }
+        .stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-top: 3px; }
         
-        /* Cards */
+        /* Card */
         .card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
+            background: white; border-radius: var(--radius); padding: 20px;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 18px;
         }
-        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-title { font-size: 16px; font-weight: 700; }
         
-        /* Buttons */
+        /* Table */
+        .table-wrap { overflow-x: auto; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #f8fafc; padding: 12px 15px; text-align: left; font-size: 11px;
+            font-weight: 700; color: var(--text-secondary); text-transform: uppercase;
+            letter-spacing: 0.5px; border-bottom: 2px solid var(--border); white-space: nowrap;
+        }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        tr:hover { background: #fafbfc; }
+        
+        /* Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px;
+            border-radius: 20px; font-size: 11px; font-weight: 700;
+        }
+        .badge-present { background: var(--success-light); color: var(--success); }
+        .badge-absent { background: var(--danger-light); color: var(--danger); }
+        .badge-pending { background: var(--warning-light); color: var(--warning); }
+        .badge-emergency { background: var(--danger); color: white; }
+        .badge-outside { background: var(--info-light); color: var(--info); }
+        
+        /* Button */
         .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            padding: 10px 18px; border: none; border-radius: 10px; font-size: 13px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
         }
         .btn:active { transform: scale(0.95); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
         .btn-info { background: var(--info); color: white; }
-        .btn-sm { padding: 8px 12px; font-size: 12px; }
-        .btn-block { width: 100%; justify-content: center; }
+        .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 8px; }
+        .btn-block { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
         
-        /* Table */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            background: #f5f5f5;
-            padding: 12px;
-            text-align: left;
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            white-space: nowrap;
+        /* Calendar */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .cal-weekday { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 8px 0; text-transform: uppercase; }
+        .cal-day {
+            aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; position: relative;
         }
-        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        
-        /* Employee List */
-        .employee-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .employee-info { display: flex; align-items: center; gap: 12px; }
-        .employee-avatar {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            background: #e8eaf6;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; color: var(--primary);
-        }
-        .employee-name { font-weight: 600; }
-        .employee-username { font-size: 12px; color: var(--text-secondary); }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 300;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 30px;
-            max-width: 450px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s;
-        }
-        .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+        .cal-day:hover { transform: scale(1.1); box-shadow: var(--shadow); }
+        .cal-present { background: var(--success-light); color: var(--success); }
+        .cal-absent { background: var(--danger-light); color: var(--danger); }
+        .cal-half { background: var(--warning-light); color: var(--warning); }
+        .cal-leave { background: var(--info-light); color: var(--info); }
+        .cal-future { background: #f8fafc; color: var(--text-muted); }
+        .cal-today { border: 2px solid var(--primary); }
         
         /* Toast */
         .toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            z-index: 1000;
-            display: none;
-            box-shadow: var(--shadow-lg);
-            max-width: 90%;
-            text-align: center;
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: white; padding: 14px 24px; border-radius: 12px;
+            font-size: 14px; font-weight: 500; z-index: 9999; display: none;
+            box-shadow: var(--shadow-xl); max-width: 90%;
         }
-        .toast.show { display: block; animation: slideDown 0.3s; }
-        @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -100%); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .toast.show { display: block; animation: toastIn 0.3s ease; }
+        @keyframes toastIn { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
-        /* Calendar */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            text-align: center;
+        /* Photo Modal */
+        .photo-modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 300; align-items: center; justify-content: center;
         }
-        .calendar-weekday { font-weight: 700; font-size: 12px; color: var(--text-secondary); padding: 10px 0; }
-        .calendar-day {
-            aspect-ratio: 1;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .day-present { background: #e8f5e9; color: #2e7d32; }
-        .day-absent { background: #ffebee; color: #c62828; }
-        .day-leave { background: #e3f2fd; color: #1565c0; }
-        .day-future { background: #fafafa; color: #bdbdbd; }
+        .photo-modal.active { display: flex; }
+        .photo-modal img { max-width: 90%; max-height: 90%; border-radius: 15px; }
         
-        /* Badge */
-        .badge {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-        }
-        .badge-present { background: #e8f5e9; color: #2e7d32; }
-        .badge-absent { background: #ffebee; color: #c62828; }
-        .badge-leave { background: #e3f2fd; color: #1565c0; }
-        .badge-pending { background: #fff3e0; color: #e65100; }
-        .badge-approved { background: #e8f5e9; color: #2e7d32; }
-        .badge-rejected { background: #ffebee; color: #c62828; }
-        .badge-emergency { background: #ff1744; color: white; }
-        
-        /* Responsive */
         @media (min-width: 768px) {
             .sidebar { left: 0; }
-            .app-container { margin-left: 280px; }
-            .menu-btn { display: none; }
-            .main-content { max-width: 1000px; margin: 0 auto; }
-        }
-        
-        @media (max-width: 400px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .login-card { padding: 30px 20px; }
+            .app { margin-left: 300px; }
+            .hamburger { display: none; }
         }
     </style>
 </head>
 <body>
-    <!-- Splash Screen -->
-    <div class="splash-screen" id="splashScreen">
-        <div class="splash-content">
-            <div class="splash-logo">📸</div>
-            <div class="splash-title">New Luck Attendance</div>
-            <div class="splash-subtitle">Smart Attendance System</div>
-            <div class="splash-loader"></div>
+
+<!-- Splash -->
+<div class="splash" id="splash">
+    <div class="splash-inner">
+        <div class="splash-icon">📸</div>
+        <div class="splash-title">AttendPro</div>
+        <div class="splash-subtitle">Smart Attendance Management</div>
+        <div class="splash-loader"></div>
+    </div>
+</div>
+
+<!-- Login -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-card">
+        <div class="login-logo">📸</div>
+        <div class="login-title">Welcome Back</div>
+        <div class="login-subtitle">Sign in to continue</div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-icon">👤</span>
+                    <input type="text" class="form-input" id="username" placeholder="Enter username" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" class="form-input" id="password" placeholder="Enter password" required>
+                </div>
+            </div>
+            <button type="submit" class="login-btn">Sign In</button>
+        </form>
+        <div class="login-hint">HR: hr/admin | Employee: emp1/1234</div>
+    </div>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+    <div class="header">
+        <div class="header-left">
+            <button class="hamburger" onclick="toggleSidebar()">☰</button>
+            <span class="header-title" id="pageTitle">Dashboard</span>
+        </div>
+        <div class="header-right">
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
-
-    <!-- Login Screen -->
-    <div class="login-screen" id="loginScreen">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="login-icon">📸</div>
-                <div class="login-title">Welcome Back</div>
-                <div class="login-subtitle">Login to mark your attendance</div>
-            </div>
-            
-            <form id="loginForm">
-                <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon">👤</span>
-                        <input type="text" class="form-input" id="username" placeholder="Enter username" required autocomplete="username">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon">🔒</span>
-                        <input type="password" class="form-input" id="password" placeholder="Enter password" required autocomplete="current-password">
-                    </div>
-                </div>
-                
-                <button type="submit" class="login-btn" id="loginBtn">Login</button>
-            </form>
-            
-            <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #999;">
-                Default HR: hr / admin | Employee: emp1 / 1234
-            </div>
+    
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar(false)"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-avatar" id="avatar">U</div>
+            <div class="sidebar-name" id="userName">User</div>
+            <div class="sidebar-role" id="userRole">Role</div>
         </div>
+        <ul class="sidebar-menu" id="menu"></ul>
     </div>
+    
+    <div class="main" id="mainContent"></div>
+</div>
 
-    <!-- Main App -->
-    <div class="app-container" id="appContainer">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-            <div class="top-title" id="topTitle">Dashboard</div>
-            <div class="top-actions">
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </div>
+<div class="toast" id="toast"></div>
+<div class="photo-modal" id="photoModal" onclick="this.classList.remove('active')">
+    <img id="photoModalImg" src="">
+</div>
+<input type="file" id="photoInput" accept="image/*" capture="user" style="display:none;">
 
-        <!-- Sidebar -->
-        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-avatar" id="sidebarAvatar">U</div>
-                <div class="sidebar-name" id="sidebarName">User</div>
-                <div class="sidebar-role" id="sidebarRole">Employee</div>
-            </div>
-            <ul class="sidebar-menu" id="sidebarMenu"></ul>
-        </div>
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyCNOriYLY3suu4IWocqVmlMoSpIGPwqPwk",
+    authDomain: "newluckattendace.firebaseapp.com",
+    projectId: "newluckattendace",
+    storageBucket: "newluckattendace.firebasestorage.app",
+    messagingSenderId: "749927661938",
+    appId: "1:749927661938:web:44e8b2a273c428c630ddeb"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4BkhWgaP7QUyOuwCACKvwitm3wLZ_hAdcTbuSjqM7FUBZutr0iEEipWX8c1UWzqvf/exec";
 
-        <!-- Main Content -->
-        <div class="main-content" id="mainContent"></div>
-    </div>
+let currentUser = null;
+let currentPage = 'dashboard';
+let selectedMonth = new Date();
 
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
+document.getElementById('loginForm').addEventListener('submit', handleLogin);
+document.addEventListener('DOMContentLoaded', checkAutoLogin);
 
-    <!-- Add Employee Modal -->
-    <div class="modal" id="addEmployeeModal">
-        <div class="modal-content">
-            <div class="modal-title">➕ Add Employee</div>
-            <form id="addEmployeeForm">
-                <div class="form-group">
-                    <label class="form-label">Employee Name</label>
-                    <input type="text" class="form-input" id="empName" required style="padding-left: 15px;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-input" id="empUsername" required style="padding-left: 15px;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="text" class="form-input" id="empPassword" required style="padding-left: 15px;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-input" id="empPhone" required style="padding-left: 15px;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Daily Salary (₹)</label>
-                    <input type="number" class="form-input" id="empSalary" required style="padding-left: 15px;">
-                </div>
-                <button type="submit" class="btn btn-success btn-block">Add Employee</button>
-                <button type="button" class="btn btn-danger btn-block" style="margin-top: 10px;" onclick="closeAddEmployeeModal()">Cancel</button>
-            </form>
-        </div>
-    </div>
+function checkAutoLogin() {
+    const saved = localStorage.getItem('currentUser');
+    if (saved) { currentUser = JSON.parse(saved); showApp(); }
+}
 
-    <!-- Hidden file input for photos -->
-    <input type="file" id="photoInput" accept="image/*" capture="user" style="display:none;">
+async function handleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    
+    try {
+        const snapshot = await db.collection('employees').get();
+        let found = null;
+        snapshot.forEach(doc => {
+            const emp = doc.data();
+            if (emp.username === username && emp.password === password) found = { id: doc.id, ...emp };
+        });
+        if (found) {
+            currentUser = found;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showApp();
+        } else {
+            showToast('Invalid username or password');
+        }
+    } catch (err) { showToast('Login error: ' + err.message); }
+}
 
-    <script>
-        // ==================== FIREBASE CONFIGURATION ====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCNOriYLY3suu4IWocqVmlMoSpIGPwqPwk",
-            authDomain: "newluckattendace.firebaseapp.com",
-            projectId: "newluckattendace",
-            storageBucket: "newluckattendace.firebasestorage.app",
-            messagingSenderId: "749927661938",
-            appId: "1:749927661938:web:44e8b2a273c428c630ddeb"
-        };
+function showApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    document.getElementById('avatar').textContent = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userRole').textContent = currentUser.role === 'hr' ? 'HR Manager' : 'Employee';
+    buildMenu();
+    showPage('dashboard');
+}
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+function buildMenu() {
+    const menu = document.getElementById('menu');
+    const items = currentUser.role === 'hr' ? [
+        ['dashboard', '📊', 'Dashboard'],
+        ['todayAttendance', '✅', "Today's Attendance"],
+        ['photoVerify', '📸', 'Photo Verification'],
+        ['outsideWork', '📍', 'Outside Work'],
+        ['leaveRequests', '🏖️', 'Leave Requests'],
+        ['employees', '👥', 'Employees']
+    ] : [
+        ['dashboard', '📊', 'My Dashboard'],
+        ['leaveRequest', '🏖️', 'Leave Request'],
+        ['outsideWork', '📍', 'Outside Work']
+    ];
+    
+    menu.innerHTML = items.map(([id, icon, label]) => `
+        <li class="menu-item" id="menu-${id}" onclick="showPage('${id}')">
+            <span class="menu-icon">${icon}</span>${label}
+        </li>
+    `).join('');
+}
+
+function showPage(page) {
+    currentPage = page;
+    const titles = { dashboard: currentUser.role==='hr'?'HR Dashboard':'My Dashboard', todayAttendance:"Today's Attendance", photoVerify:'Photo Verification', outsideWork:'Outside Work', leaveRequests:'Leave Requests', employees:'Employees', leaveRequest:'Leave Request' };
+    document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+    const el = document.getElementById('menu-' + page);
+    if (el) el.classList.add('active');
+    toggleSidebar(false);
+    
+    if (currentUser.role === 'hr') {
+        if (page==='dashboard') showHRDashboard();
+        else if (page==='todayAttendance') showTodayAttendance();
+        else if (page==='photoVerify') showPhotoVerify();
+        else if (page==='outsideWork') showOutsideWorkHR();
+        else if (page==='leaveRequests') showLeaveRequests();
+        else if (page==='employees') showEmployees();
+    } else {
+        if (page==='dashboard') showEmpDashboard();
+        else if (page==='leaveRequest') showLeaveForm();
+        else if (page==='outsideWork') showOutsideForm();
+    }
+}
+
+function toggleSidebar(force) {
+    const s = document.getElementById('sidebar');
+    const o = document.getElementById('overlay');
+    if (force === false) { s.classList.remove('active'); o.classList.remove('active'); }
+    else { s.classList.toggle('active'); o.classList.toggle('active'); }
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    document.getElementById('app').classList.remove('active');
+    document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function viewPhoto(url) {
+    document.getElementById('photoModalImg').src = url;
+    document.getElementById('photoModal').classList.add('active');
+}
+
+function callEmp(phone) {
+    if (phone) window.location.href = 'tel:' + phone;
+    else showToast('No phone number');
+}
+
+function calcHours(inTime, outTime) {
+    if (!inTime || !outTime) return 0;
+    const today = new Date().toDateString();
+    const diff = new Date(today + ' ' + outTime) - new Date(today + ' ' + inTime);
+    return diff > 0 ? diff / 3600000 : 0;
+}
+
+// HR Dashboard
+async function showHRDashboard() {
+    const main = document.getElementById('mainContent');
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        const [empSnap, attSnap, leaveSnap, outsideSnap] = await Promise.all([
+            db.collection('employees').get(),
+            db.collection('attendance').where('date','==',today).get(),
+            db.collection('leaveRequests').where('status','==','pending').get(),
+            db.collection('outsideWork').where('date','==',today).get()
+        ]);
         
-        db.enablePersistence({ synchronizeTabs: true })
-            .catch(err => console.error("Persistence error:", err));
+        const employees = [];
+        empSnap.forEach(d => { const e = d.data(); if (e.role==='employee') employees.push({id:d.id,...e}); });
+        
+        const attMap = {};
+        attSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
+        
+        const present = employees.filter(e => attMap[e.id]).length;
+        const absent = employees.length - present;
+        const leaves = leaveSnap.size;
+        const outside = outsideSnap.size;
+        
+        main.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon" style="background:var(--info-light)">👥</div><div class="stat-value">${employees.length}</div><div class="stat-label">Total Employees</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--success-light)">✅</div><div class="stat-value" style="color:var(--success)">${present}</div><div class="stat-label">Present Today</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--danger-light)">❌</div><div class="stat-value" style="color:var(--danger)">${absent}</div><div class="stat-label">Absent Today</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--warning-light)">🏖️</div><div class="stat-value" style="color:var(--warning)">${leaves}</div><div class="stat-label">Pending Leaves</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--purple-light)">📍</div><div class="stat-value" style="color:var(--purple)">${outside}</div><div class="stat-label">Outside Work</div></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">📋 Today's Overview</span><span class="badge badge-present">Live</span></div>
+                <p style="font-size:14px;margin-bottom:8px;">✅ <strong>${present}</strong> employees present</p>
+                <p style="font-size:14px;margin-bottom:8px;">❌ <strong>${absent}</strong> employees absent</p>
+                <p style="font-size:14px;">📍 <strong>${outside}</strong> employees outside</p>
+            </div>
+        `;
+    } catch(err) { showToast('Error: ' + err.message); }
+}
 
-        const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4BkhWgaP7QUyOuwCACKvwitm3wLZ_hAdcTbuSjqM7FUBZutr0iEEipWX8c1UWzqvf/exec";
+// Today's Attendance
+async function showTodayAttendance() {
+    const main = document.getElementById('mainContent');
+    const today = new Date().toISOString().split('T')[0];
+    
+    const [empSnap, attSnap] = await Promise.all([
+        db.collection('employees').get(),
+        db.collection('attendance').where('date','==',today).get()
+    ]);
+    
+    const employees = [];
+    empSnap.forEach(d => { const e = d.data(); if (e.role==='employee') employees.push({id:d.id,...e}); });
+    
+    const attMap = {};
+    attSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
+    
+    main.innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">✅ Today's Attendance</span><span class="badge badge-present">${new Date().toLocaleDateString()}</span></div>
+            <div class="table-wrap"><table>
+                <thead><tr><th>Employee</th><th>Status</th><th>Check-in</th><th>Hours</th><th>Photo</th><th>Action</th></tr></thead>
+                <tbody>
+                ${employees.map(e => {
+                    const att = attMap[e.id];
+                    const hours = att ? calcHours(att.checkInTime, att.checkOutTime) : 0;
+                    return `<tr>
+                        <td><strong>${e.name}</strong><br><small style="color:var(--text-muted)">${e.username}</small></td>
+                        <td><span class="badge ${att?'badge-present':'badge-absent'}">${att?'✅ Present':'❌ Absent'}</span></td>
+                        <td>${att?.checkInTime || '-'}</td>
+                        <td>${hours.toFixed(1)}h</td>
+                        <td>${att?.checkInPhoto ? `<span onclick="viewPhoto('${att.checkInPhoto}')" style="cursor:pointer">📸</span>` : '<span style="color:var(--danger)">❌</span>'}</td>
+                        <td><button class="btn btn-info btn-sm" onclick="callEmp('${e.phone}')">📞</button></td>
+                    </tr>`;
+                }).join('')}
+                </tbody>
+            </table></div>
+        </div>
+    `;
+}
 
-        // ==================== GLOBAL VARIABLES ====================
-        let currentUser = null;
-        let currentPage = 'dashboard';
-        let selectedDate = new Date();
+// Photo Verification
+async function showPhotoVerify() {
+    const main = document.getElementById('mainContent');
+    const today = new Date().toISOString().split('T')[0];
+    
+    const attSnap = await db.collection('attendance').where('date','==',today).get();
+    const atts = [];
+    attSnap.forEach(d => atts.push(d.data()));
+    const missing = atts.filter(a => !a.checkInPhoto);
+    const withPhoto = atts.filter(a => a.checkInPhoto);
+    
+    main.innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">📸 Photo Verification</span></div>
+            <p style="font-size:14px;margin-bottom:15px;">✅ With Photo: <strong>${withPhoto.length}</strong> | ❌ Missing: <strong>${missing.length}</strong></p>
+        </div>
+        ${missing.length ? `<div class="card">
+            <div class="card-header"><span class="card-title">⚠️ Missing Photos</span><span class="badge badge-absent">${missing.length}</span></div>
+            ${missing.map(a => `<div style="padding:12px;background:var(--danger-light);border-radius:10px;margin-bottom:8px;"><strong>${a.employeeName}</strong><br><small>Check-in: ${a.checkInTime||'N/A'}</small></div>`).join('')}
+        </div>` : ''}
+        <div class="card">
+            <div class="card-header"><span class="card-title">📸 Photo Gallery</span></div>
+            ${withPhoto.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;">
+                ${withPhoto.map(a => `<div style="text-align:center;cursor:pointer" onclick="viewPhoto('${a.checkInPhoto}')"><img src="${a.checkInPhoto}" style="width:100%;height:100px;object-fit:cover;border-radius:10px;"><small>${a.employeeName}</small></div>`).join('')}
+            </div>` : '<p style="color:var(--text-muted)">No photos yet</p>'}
+        </div>
+    `;
+}
 
-        const DEFAULT_EMPLOYEES = [
-            { id: 'emp001', name: 'John Doe', username: 'emp1', password: '1234', role: 'employee', salary: 500, phone: '9876543210' },
-            { id: 'emp002', name: 'Jane Smith', username: 'emp2', password: '1234', role: 'employee', salary: 600, phone: '9876543211' },
-            { id: 'emp003', name: 'Bob Johnson', username: 'emp3', password: '1234', role: 'employee', salary: 550, phone: '9876543212' },
-            { id: 'emp004', name: 'Alice Brown', username: 'emp4', password: '1234', role: 'employee', salary: 700, phone: '9876543213' },
-            { id: 'emp005', name: 'Charlie Davis', username: 'emp5', password: '1234', role: 'employee', salary: 450, phone: '9876543214' },
-            { id: 'hr001', name: 'HR Manager', username: 'hr', password: 'admin', role: 'hr', salary: 1000, phone: '9876543299' }
-        ];
+// Outside Work HR
+async function showOutsideWorkHR() {
+    const main = document.getElementById('mainContent');
+    const today = new Date().toISOString().split('T')[0];
+    const snap = await db.collection('outsideWork').where('date','==',today).get();
+    const works = [];
+    snap.forEach(d => works.push(d.data()));
+    
+    main.innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">📍 Outside Work Today</span><span class="badge badge-outside">${works.length}</span></div>
+            ${works.length ? works.map(w => `
+                <div style="padding:15px;background:var(--info-light);border-radius:10px;margin-bottom:10px;">
+                    <strong>${w.employeeName}</strong>
+                    <p style="font-size:13px;color:var(--text-secondary);margin-top:5px;">Reason: ${w.reason}</p>
+                    <p style="font-size:13px;color:var(--text-secondary);">Time: ${w.startTime}</p>
+                    ${w.description ? `<p style="font-size:13px;color:var(--text-secondary);">Details: ${w.description}</p>` : ''}
+                    <button class="btn btn-info btn-sm" style="margin-top:8px;" onclick="callEmp('${w.phone}')">📞 Call</button>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted)">No outside work logged</p>'}
+        </div>
+    `;
+}
 
-        // ==================== INITIALIZATION ====================
-        document.addEventListener('DOMContentLoaded', async () => {
-            await seedEmployees();
-            checkAutoLogin();
+// Leave Requests
+async function showLeaveRequests() {
+    const main = document.getElementById('mainContent');
+    const snap = await db.collection('leaveRequests').orderBy('timestamp','desc').get();
+    const reqs = [];
+    snap.forEach(d => reqs.push({id:d.id,...d.data()}));
+    
+    main.innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">🏖️ Leave Requests</span><span class="badge badge-pending">${reqs.filter(r=>r.status==='pending').length} Pending</span></div>
+            ${reqs.length ? reqs.map(r => `
+                <div style="padding:15px;border-bottom:1px solid var(--border);${r.isEmergency?'background:var(--danger-light);border-radius:10px;':''}">
+                    <div style="display:flex;justify-content:space-between;align-items:start;">
+                        <div>
+                            <strong>${r.employeeName}</strong>
+                            ${r.isEmergency ? '<span class="badge badge-emergency" style="margin-left:8px;">EMERGENCY</span>' : ''}
+                            <p style="font-size:13px;color:var(--text-secondary);margin-top:5px;">${r.leaveType} - ${r.reason}</p>
+                            <p style="font-size:12px;color:var(--text-muted);">Date: ${r.leaveDate}</p>
+                        </div>
+                        <span class="badge ${r.status==='approved'?'badge-present':r.status==='rejected'?'badge-absent':'badge-pending'}">${r.status.toUpperCase()}</span>
+                    </div>
+                    ${r.status==='pending' ? `<div style="margin-top:10px;display:flex;gap:8px;">
+                        <button class="btn btn-success btn-sm" onclick="approveLeave('${r.id}')">✅ Approve</button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectLeave('${r.id}')">❌ Reject</button>
+                    </div>` : ''}
+                </div>
+            `).join('') : '<p style="color:var(--text-muted)">No leave requests</p>'}
+        </div>
+    `;
+}
+
+async function approveLeave(id) {
+    await db.collection('leaveRequests').doc(id).update({status:'approved'});
+    showToast('✅ Leave approved');
+    showLeaveRequests();
+}
+async function rejectLeave(id) {
+    await db.collection('leaveRequests').doc(id).update({status:'rejected'});
+    showToast('❌ Leave rejected');
+    showLeaveRequests();
+}
+
+// Employees
+async function showEmployees() {
+    const main = document.getElementById('mainContent');
+    const snap = await db.collection('employees').get();
+    const emps = [];
+    snap.forEach(d => emps.push({id:d.id,...d.data()}));
+    
+    main.innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">👥 All Employees</span><span class="badge badge-present">${emps.length}</span></div>
+            <div class="table-wrap"><table>
+                <thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Salary</th></tr></thead>
+                <tbody>
+                ${emps.map(e => `<tr>
+                    <td><strong>${e.name}</strong></td>
+                    <td>${e.username}</td>
+                    <td>${e.phone||'-'}</td>
+                    <td><span class="badge ${e.role==='hr'?'badge-emergency':'badge-present'}">${e.role}</span></td>
+                    <td>₹${e.salary}</td>
+                </tr>`).join('')}
+                </tbody>
+            </table></div>
+        </div>
+    `;
+}
+
+// Employee Dashboard
+async function showEmpDashboard() {
+    const main = document.getElementById('mainContent');
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        const snap = await db.collection('attendance').where('employeeId','==',currentUser.id).get();
+        const records = [];
+        snap.forEach(d => records.push(d.data()));
+        
+        const now = new Date();
+        const monthRecords = records.filter(r => {
+            const d = new Date(r.date);
+            return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
         });
-
-        async function seedEmployees() {
-            try {
-                const snapshot = await db.collection('employees').get();
-                if (snapshot.empty) {
-                    const batch = db.batch();
-                    DEFAULT_EMPLOYEES.forEach(emp => {
-                        batch.set(db.collection('employees').doc(emp.id), emp);
-                    });
-                    await batch.commit();
-                    console.log('✅ Default employees seeded');
-                }
-            } catch (error) {
-                console.error('Seeding error:', error);
-            }
-        }
-
-        function checkAutoLogin() {
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showApp();
-            }
-        }
-
-        // ==================== LOGIN ====================
-        document.getElementById('loginForm').addEventListener('submit', handleLogin);
-
-        async function handleLogin(e) {
-            e.preventDefault();
+        
+        const presentDays = monthRecords.filter(r => r.checkInTime && r.checkOutTime).length;
+        const absentDays = monthRecords.filter(r => !r.checkInTime).length;
+        
+        let totalHours = 0, otHours = 0;
+        monthRecords.forEach(r => {
+            const h = calcHours(r.checkInTime, r.checkOutTime);
+            totalHours += h;
+            if (h > 9) otHours += (h - 9);
+        });
+        
+        const avgHours = presentDays ? (totalHours/presentDays).toFixed(1) : '0';
+        const todayRec = records.find(r => r.date === today);
+        const todayHours = calcHours(todayRec?.checkInTime, todayRec?.checkOutTime);
+        
+        main.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon" style="background:var(--success-light)">✅</div><div class="stat-value" style="color:var(--success)">${presentDays}</div><div class="stat-label">Present (Month)</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--danger-light)">❌</div><div class="stat-value" style="color:var(--danger)">${absentDays}</div><div class="stat-label">Absent (Month)</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--info-light)">⏰</div><div class="stat-value">${totalHours.toFixed(1)}h</div><div class="stat-label">Total Hours</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--warning-light)">📊</div><div class="stat-value">${avgHours}h</div><div class="stat-label">Avg Daily</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--danger-light)">🔥</div><div class="stat-value" style="color:var(--danger)">${otHours.toFixed(1)}h</div><div class="stat-label">Overtime</div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:var(--purple-light)">📅</div><div class="stat-value" style="color:var(--purple)">${todayHours.toFixed(1)}h</div><div class="stat-label">Today</div></div>
+            </div>
             
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
+            <div class="card">
+                <div class="card-header"><span class="card-title">Today's Status</span></div>
+                ${todayRec?.checkInTime ? `
+                    <p style="font-size:14px;margin-bottom:8px;">✅ Check-in: <strong>${todayRec.checkInTime}</strong></p>
+                    ${todayRec.checkOutTime ? `
+                        <p style="font-size:14px;margin-bottom:8px;">🚪 Check-out: <strong>${todayRec.checkOutTime}</strong></p>
+                        <p style="font-size:14px;">⏰ Hours: <strong>${todayHours.toFixed(1)}h</strong> ${todayHours>9?`| 🔥 OT: <strong style="color:var(--danger)">${(todayHours-9).toFixed(1)}h</strong>`:''}</p>
+                    ` : '<p style="color:var(--warning);font-size:14px;">Still working...</p>'}
+                ` : '<p style="color:var(--text-muted)">Not checked in yet</p>'}
+            </div>
             
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
+            ${!todayRec?.checkInTime ? `<button class="btn btn-success btn-block" style="margin-bottom:10px;" onclick="checkIn()">📸 Check In Now</button>` : ''}
+            ${todayRec?.checkInTime && !todayRec?.checkOutTime ? `<button class="btn btn-danger btn-block" style="margin-bottom:10px;" onclick="checkOut()">🚪 Check Out</button>` : ''}
             
-            try {
-                const snapshot = await db.collection('employees')
-                    .where('username', '==', username)
-                    .where('password', '==', password)
-                    .get();
-                
-                if (!snapshot.empty) {
-                    currentUser = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    showToast('Welcome, ' + currentUser.name + '!');
-                    showApp();
-                } else {
-                    showToast('❌ Invalid username or password');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showToast('❌ Login failed. Check connection.');
-            }
-            
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Login';
-        }
-
-        function showApp() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContainer').classList.add('active');
-            
-            const initials = getInitials(currentUser.name);
-            document.getElementById('sidebarAvatar').textContent = initials;
-            document.getElementById('sidebarName').textContent = currentUser.name;
-            document.getElementById('sidebarRole').textContent = currentUser.role === 'hr' ? 'HR Manager' : 'Employee';
-            
-            buildNavigation();
-            showPage('dashboard');
-        }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            document.getElementById('appContainer').classList.remove('active');
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('password').value = '';
-            showToast('Logged out');
-        }
-
-        function getInitials(name) {
-            return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-        }
-
-        // ==================== NAVIGATION ====================
-        function buildNavigation() {
-            const menu = document.getElementById('sidebarMenu');
-            
-            if (currentUser.role === 'hr') {
-                menu.innerHTML = `
-                    <li class="sidebar-item active" onclick="showPage('dashboard')">
-                        <span class="sidebar-icon">📊</span> Dashboard
-                    </li>
-                    <li class="sidebar-item" onclick="showPage('employees')">
-                        <span class="sidebar-icon">👥</span> Manage Employees
-                    </li>
-                    <li class="sidebar-item" onclick="showPage('leaveRequests')">
-                        <span class="sidebar-icon">🏖️</span> Leave Requests
-                    </li>
-                    <li class="sidebar-item" onclick="showPage('notPresent')">
-                        <span class="sidebar-icon">❌</span> Not Present
-                    </li>
-                    <li class="sidebar-item" onclick="showPage('salary')">
-                        <span class="sidebar-icon">💰</span> Salary Calculator
-                    </li>
-                `;
-            } else {
-                menu.innerHTML = `
-                    <li class="sidebar-item active" onclick="showPage('dashboard')">
-                        <span class="sidebar-icon">📊</span> Dashboard
-                    </li>
-                    <li class="sidebar-item" onclick="showPage('attendance')">
-                        <span class="sidebar-icon">📅</span> My Attendance
-                    </li>
-                    <li class="sidebar-item" onclick="showPage('leaveRequest')">
-                        <span class="sidebar-icon">🏖️</span> Leave Request
-                    </li>
-                    <li class="sidebar-item" onclick="showPage('outsideWork')">
-                        <span class="sidebar-icon">📸</span> Outside Work
-                    </li>
-                `;
-            }
-        }
-
-        function showPage(page) {
-            currentPage = page;
-            document.getElementById('topTitle').textContent = getPageTitle(page);
-            
-            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-            const items = document.querySelectorAll('.sidebar-item');
-            const index = getPageIndex(page);
-            if (items[index]) items[index].classList.add('active');
-            
-            toggleSidebar(false);
-            
-            if (currentUser.role === 'hr') {
-                switch(page) {
-                    case 'dashboard': showHRDashboard(); break;
-                    case 'employees': showEmployeeManagement(); break;
-                    case 'leaveRequests': showLeaveRequests(); break;
-                    case 'notPresent': showNotPresentList(); break;
-                    case 'salary': showSalaryCalculator(); break;
-                }
-            } else {
-                switch(page) {
-                    case 'dashboard': showEmployeeDashboard(); break;
-                    case 'attendance': showAttendanceCalendar(); break;
-                    case 'leaveRequest': showLeaveRequestForm(); break;
-                    case 'outsideWork': showOutsideWorkForm(); break;
-                }
-            }
-        }
-
-        function getPageTitle(page) {
-            const titles = {
-                dashboard: currentUser.role === 'hr' ? 'HR Dashboard' : 'My Dashboard',
-                employees: 'Manage Employees',
-                leaveRequests: 'Leave Requests',
-                notPresent: 'Not Present List',
-                salary: 'Salary Calculator',
-                attendance: 'My Attendance',
-                leaveRequest: 'Leave Request',
-                outsideWork: 'Outside Work'
-            };
-            return titles[page] || 'Dashboard';
-        }
-
-        function getPageIndex(page) {
-            const pages = currentUser.role === 'hr' 
-                ? ['dashboard', 'employees', 'leaveRequests', 'notPresent', 'salary']
-                : ['dashboard', 'attendance', 'leaveRequest', 'outsideWork'];
-            return pages.indexOf(page);
-        }
-
-        function toggleSidebar(forceClose = null) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            
-            if (forceClose === false) {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            } else {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-            }
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // ==================== HR DASHBOARD ====================
-        async function showHRDashboard() {
-            const mainContent = document.getElementById('mainContent');
-            
-            try {
-                const employeesSnapshot = await db.collection('employees').get();
-                const allEmployees = [];
-                employeesSnapshot.forEach(doc => allEmployees.push({ id: doc.id, ...doc.data() }));
-                const totalEmployees = allEmployees.filter(e => e.role === 'employee').length;
-                
-                const today = new Date().toISOString().split('T')[0];
-                const attendanceSnapshot = await db.collection('attendance').where('date', '==', today).get();
-                const todayAttendance = [];
-                attendanceSnapshot.forEach(doc => todayAttendance.push(doc.data()));
-                const presentToday = todayAttendance.filter(a => a.status === 'present').length;
-                const absentToday = totalEmployees - presentToday;
-                
-                const leaveSnapshot = await db.collection('leaveRequests').where('status', '==', 'pending').get();
-                const pendingLeaves = [];
-                leaveSnapshot.forEach(doc => pendingLeaves.push({ id: doc.id, ...doc.data() }));
-                
-                mainContent.innerHTML = `
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">👥</div>
-                            <div class="stat-value">${totalEmployees}</div>
-                            <div class="stat-label">Total Employees</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">✅</div>
-                            <div class="stat-value" style="color: #00c853;">${presentToday}</div>
-                            <div class="stat-label">Present Today</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">❌</div>
-                            <div class="stat-value" style="color: #ff1744;">${absentToday}</div>
-                            <div class="stat-label">Absent Today</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">🏖️</div>
-                            <div class="stat-value" style="color: #ff9100;">${pendingLeaves.length}</div>
-                            <div class="stat-label">Pending Leaves</div>
-                        </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📅 ${now.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-sm" onclick="changeMonth(-1)">◀</button>
+                        <button class="btn btn-sm" onclick="changeMonth(1)">▶</button>
                     </div>
-                    
-                    ${pendingLeaves.length > 0 ? `
-                        <div class="card">
-                            <div class="card-title">🔔 Leave Notifications</div>
-                            ${pendingLeaves.map(leave => `
-                                <div style="background: ${leave.isEmergency ? '#ffebee' : '#fff3e0'}; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                                    <p style="font-weight: 600;">${leave.isEmergency ? '🚨 EMERGENCY: ' : '📋 '} ${leave.employeeName}</p>
-                                    <p style="font-size: 14px; color: #666; margin: 5px 0;">${leave.leaveType} - ${leave.reason}</p>
-                                    <p style="font-size: 12px; color: #999;">Date: ${leave.leaveDate}</p>
-                                    <div style="margin-top: 10px; display: flex; gap: 10px;">
-                                        <button class="btn btn-success btn-sm" onclick="approveLeave('${leave.id}')">✅ Approve</button>
-                                        <button class="btn btn-danger btn-sm" onclick="rejectLeave('${leave.id}')">❌ Reject</button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : '<div class="card"><p style="color: #666;">No pending leave requests</p></div>'}
-                `;
-            } catch (error) {
-                console.error('HR Dashboard error:', error);
-                showToast('Error loading dashboard');
-            }
-        }
+                </div>
+                <div class="calendar-grid">
+                    <div class="cal-weekday">Sun</div><div class="cal-weekday">Mon</div><div class="cal-weekday">Tue</div><div class="cal-weekday">Wed</div><div class="cal-weekday">Thu</div><div class="cal-weekday">Fri</div><div class="cal-weekday">Sat</div>
+                    ${genCalendar(records)}
+                </div>
+                <div style="margin-top:15px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;">
+                    <span>🟢 P = Present (9h+)</span>
+                    <span>🔴 A = Absent</span>
+                    <span>🟡 P:A = First Half</span>
+                    <span>🟠 A:P = Second Half</span>
+                    <span>🔵 L = Leave</span>
+                </div>
+            </div>
+        `;
+    } catch(err) { showToast('Error: ' + err.message); }
+}
 
-        // ==================== EMPLOYEE MANAGEMENT ====================
-        async function showEmployeeManagement() {
-            const mainContent = document.getElementById('mainContent');
-            
+function genCalendar(records) {
+    const year = selectedMonth.getFullYear();
+    const month = selectedMonth.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const days = new Date(year, month+1, 0).getDate();
+    const today = new Date();
+    let html = '';
+    for (let i=0;i<firstDay;i++) html += '<div></div>';
+    for (let d=1;d<=days;d++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const rec = records.find(r => r.date === dateStr);
+        const isToday = today.getDate()===d && today.getMonth()===month && today.getFullYear()===year;
+        let cls = 'cal-future', txt = d;
+        if (rec) {
+            const h = calcHours(rec.checkInTime, rec.checkOutTime);
+            if (rec.status==='leave') { cls='cal-leave'; txt='L'; }
+            else if (rec.checkInTime && rec.checkOutTime) {
+                if (h>=8.5) { cls='cal-present'; txt='P'; }
+                else if (h>=4.5) { cls='cal-half'; txt = parseInt(rec.checkInTime.split(':')[0])<12 ? 'P:A' : 'A:P'; }
+                else { cls='cal-absent'; txt='A'; }
+            } else if (rec.checkInTime) { cls='cal-half'; txt='P:A'; }
+            else { cls='cal-absent'; txt='A'; }
+        } else if (new Date(dateStr) > today) { cls='cal-future'; }
+        else { cls='cal-absent'; txt='A'; }
+        html += `<div class="cal-day ${cls} ${isToday?'cal-today':''}">${txt}</div>`;
+    }
+    return html;
+}
+
+function changeMonth(delta) {
+    selectedMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth()+delta, 1);
+    showEmpDashboard();
+}
+
+async function checkIn() {
+    document.getElementById('photoInput').click();
+    document.getElementById('photoInput').onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        showToast('📸 Uploading...');
+        const reader = new FileReader();
+        reader.onload = async function(ev) {
+            const photoData = ev.target.result;
             try {
-                const snapshot = await db.collection('employees').get();
-                const employees = [];
-                snapshot.forEach(doc => employees.push({ id: doc.id, ...doc.data() }));
-                
-                mainContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-title">👥 Manage Employees</div>
-                        <button class="btn btn-success" onclick="openAddEmployeeModal()">➕ Add Employee</button>
+                const base64 = photoData.split(',')[1];
+                await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ photo: base64, employeeId: currentUser.id, employeeName: currentUser.name, photoType:'checkin', attendanceDate: new Date().toISOString().split('T')[0], mimeType:'image/jpeg' }) });
+            } catch(err) {}
+            await db.collection('attendance').add({
+                employeeId: currentUser.id, employeeName: currentUser.name,
+                date: new Date().toISOString().split('T')[0],
+                checkInTime: new Date().toLocaleTimeString(),
+                checkInPhoto: photoData, status: 'present',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showToast('✅ Checked in!');
+            showEmpDashboard();
+        };
+        reader.readAsDataURL(file);
+    };
+}
+
+async function checkOut() {
+    const today = new Date().toISOString().split('T')[0];
+    const snap = await db.collection('attendance').where('employeeId','==',currentUser.id).where('date','==',today).get();
+    if (!snap.empty) {
+        await snap.docs[0].ref.update({ checkOutTime: new Date().toLocaleTimeString() });
+        showToast('✅ Checked out!');
+        showEmpDashboard();
+    }
+}
+
+function showLeaveForm() {
+    document.getElementById('mainContent').innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">🏖️ Apply for Leave</span></div>
+            <div class="form-group"><label class="form-label">Leave Type</label>
+                <select class="form-input" id="leaveType" style="padding-left:15px;">
+                    <option value="">Select type</option>
+                    <option value="planned">Planned Leave</option>
+                    <option value="emergency">Emergency Leave</option>
+                    <option value="sick">Sick Leave</option>
+                    <option value="family">Family Event</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="leaveDate" style="padding-left:15px;"></div>
+            <div class="form-group"><label class="form-label">Reason</label><textarea class="form-input" id="leaveReason" rows="4" style="padding-left:15px;"></textarea></div>
+            <button class="btn btn-warning btn-block" onclick="submitLeave()">Submit Request</button>
+        </div>
+    `;
+}
+
+async function submitLeave() {
+    const type = document.getElementById('leaveType').value;
+    const date = document.getElementById('leaveDate').value;
+    const reason = document.getElementById('leaveReason').value;
+    if (!type || !date || !reason) { showToast('Fill all fields'); return; }
+    await db.collection('leaveRequests').add({
+        employeeId: currentUser.id, employeeName: currentUser.name,
+        leaveType: type, leaveDate: date, reason: reason,
+        status: 'pending', isEmergency: type==='emergency',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Leave submitted!');
+    showPage('dashboard');
+}
+
+function showOutsideForm() {
+    document.getElementById('mainContent').innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">📍 Outside Work</span></div>
+            <div class="form-group"><label class="form-label">Reason</label>
+                <select class="form-input" id="outReason" style="padding-left:15px;">
+                    <option value="">Select reason</option>
+                    <option value="client">Client Visit</option>
+                    <option value="delivery">Delivery</option>
+                    <option value="purchase">Purchase Materials</option>
+                    <option value="bank">Bank Work</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="outDesc" rows="3" style="padding-left:15px;"></textarea></div>
+            <button class="btn btn-info btn-block" onclick="submitOutside()">Submit</button>
+        </div>
+    `;
+}
+
+async function submitOutside() {
+    const reason = document.getElementById('outReason').value;
+    const desc = document.getElementById('outDesc').value;
+    if (!reason) { showToast('Select reason'); return; }
+    await db.collection('outsideWork').add({
+        employeeId: currentUser.id, employeeName: currentUser.name,
+        reason: reason, description: desc,
+        startTime: new Date().toLocaleTimeString(),
+        date: new Date().toISOString().split('T')[0],
+        phone: currentUser.phone,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ Outside work logged!');
+    showPage('dashboard');
+}
+</script>
+    <!-- Break Tracking Modal -->
+<div class="break-modal" id="breakModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:20px;padding:30px;max-width:400px;width:90%;text-align:center;">
+        <div style="font-size:60px;margin-bottom:15px;">☕</div>
+        <h3 style="margin-bottom:10px;" id="breakModalTitle">Break Time</h3>
+        <p style="color:#666;margin-bottom:20px;" id="breakModalText">Start your break?</p>
+        <div style="display:flex;gap:10px;">
+            <button onclick="confirmBreak()" style="flex:1;padding:12px;background:#f59e0b;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;">Confirm</button>
+            <button onclick="closeBreakModal()" style="flex:1;padding:12px;background:#e2e8f0;color:#333;border:none;border-radius:10px;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== BREAK TRACKING SYSTEM ====================
+
+let breakModalAction = null;
+
+// Show break modal
+function showBreakModal(action) {
+    breakModalAction = action;
+    const modal = document.getElementById('breakModal');
+    const title = document.getElementById('breakModalTitle');
+    const text = document.getElementById('breakModalText');
+    
+    if (action === 'start') {
+        title.textContent = 'Start Break';
+        text.textContent = 'Are you sure you want to start your break?';
+    } else {
+        title.textContent = 'End Break';
+        text.textContent = 'Are you sure you want to end your break?';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+// Close break modal
+function closeBreakModal() {
+    document.getElementById('breakModal').style.display = 'none';
+}
+
+// Confirm break action
+async function confirmBreak() {
+    closeBreakModal();
+    if (breakModalAction === 'start') {
+        await startBreak();
+    } else {
+        await endBreak();
+    }
+}
+
+// Start Break
+async function startBreak() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        // Find today's attendance record
+        const snap = await db.collection('attendance')
+            .where('employeeId', '==', currentUser.id)
+            .where('date', '==', today)
+            .get();
+        
+        if (snap.empty) {
+            showToast('❌ Please check in first');
+            return;
+        }
+        
+        const breakStartTime = new Date().toLocaleTimeString();
+        
+        // Update attendance with break start
+        await snap.docs[0].ref.update({
+            breakStart: breakStartTime,
+            breakStartTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Log break start
+        await db.collection('breaks').add({
+            employeeId: currentUser.id,
+            employeeName: currentUser.name,
+            date: today,
+            type: 'start',
+            time: breakStartTime,
+            phone: currentUser.phone,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        showToast('☕ Break started at ' + breakStartTime);
+        
+        // Refresh dashboard
+        if (currentUser.role === 'employee') {
+            showEmpDashboard();
+        }
+        
+    } catch (error) {
+        console.error('Break start error:', error);
+        showToast('❌ Error starting break');
+    }
+}
+
+// End Break
+async function endBreak() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        // Find today's attendance record
+        const snap = await db.collection('attendance')
+            .where('employeeId', '==', currentUser.id)
+            .where('date', '==', today)
+            .get();
+        
+        if (snap.empty) {
+            showToast('❌ No attendance record found');
+            return;
+        }
+        
+        const data = snap.docs[0].data();
+        
+        if (!data.breakStart) {
+            showToast('❌ No break started');
+            return;
+        }
+        
+        const breakEndTime = new Date().toLocaleTimeString();
+        
+        // Calculate break duration in hours
+        const breakDuration = calcHours(data.breakStart, breakEndTime);
+        
+        // Update attendance with break end
+        await snap.docs[0].ref.update({
+            breakEnd: breakEndTime,
+            breakDuration: breakDuration,
+            breakEndTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Log break end
+        await db.collection('breaks').add({
+            employeeId: currentUser.id,
+            employeeName: currentUser.name,
+            date: today,
+            type: 'end',
+            time: breakEndTime,
+            duration: breakDuration,
+            phone: currentUser.phone,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Notify HR if break exceeds 1 hour (60 minutes)
+        if (breakDuration > 1) {
+            await db.collection('notifications').add({
+                type: 'long_break',
+                employeeId: currentUser.id,
+                employeeName: currentUser.name,
+                message: `${currentUser.name} took ${breakDuration.toFixed(1)} hours break (exceeds 1 hour limit)`,
+                date: today,
+                status: 'unread',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            showToast(`⚠️ Break ended! Duration: ${breakDuration.toFixed(1)} hours (Long break!)`);
+        } else {
+            showToast(`✅ Break ended! Duration: ${breakDuration.toFixed(1)} hours`);
+        }
+        
+        // Refresh dashboard
+        if (currentUser.role === 'employee') {
+            showEmpDashboard();
+        }
+        
+    } catch (error) {
+        console.error('Break end error:', error);
+        showToast('❌ Error ending break');
+    }
+}
+
+// Get break status for employee dashboard
+function getBreakStatus(todayRec) {
+    if (!todayRec) return '';
+    
+    if (todayRec.breakStart && !todayRec.breakEnd) {
+        // Currently on break
+        return `
+            <div style="margin-top:15px;padding:15px;background:#fef3c7;border-radius:10px;text-align:center;">
+                <p style="font-size:16px;font-weight:700;color:#f59e0b;">☕ Currently on Break</p>
+                <p style="font-size:13px;color:#666;margin-top:5px;">Started at: ${todayRec.breakStart}</p>
+                <button class="btn btn-info" style="margin-top:10px;width:100%;" onclick="showBreakModal('end')">🔚 End Break</button>
+            </div>
+        `;
+    } else if (todayRec.breakStart && todayRec.breakEnd) {
+        // Break completed
+        const duration = todayRec.breakDuration || 0;
+        const isLong = duration > 1;
+        
+        return `
+            <div style="margin-top:15px;padding:15px;background:${isLong ? '#fee2e2' : '#d1fae5'};border-radius:10px;">
+                <p style="font-size:14px;font-weight:700;color:${isLong ? '#ef4444' : '#10b981'};">
+                    ${isLong ? '⚠️ Long Break' : '✅ Break Completed'}
+                </p>
+                <p style="font-size:13px;color:#666;margin-top:5px;">Started: ${todayRec.breakStart}</p>
+                <p style="font-size:13px;color:#666;">Ended: ${todayRec.breakEnd}</p>
+                <p style="font-size:14px;font-weight:700;margin-top:5px;color:${isLong ? '#ef4444' : '#10b981'};">
+                    Duration: ${duration.toFixed(2)} hours
+                </p>
+            </div>
+        `;
+    } else {
+        // No break yet
+        return `
+            <button class="btn btn-warning" style="margin-top:15px;width:100%;" onclick="showBreakModal('start')">
+                ☕ Start Break
+            </button>
+        `;
+    }
+}
+
+// HR Break Monitoring Page
+async function showBreaks() {
+    const main = document.getElementById('mainContent');
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        // Get current break status
+        const attSnap = await db.collection('attendance')
+            .where('date', '==', today)
+            .get();
+        
+        const currentBreaks = [];
+        const completedBreaks = [];
+        
+        attSnap.forEach(d => {
+            const data = d.data();
+            if (data.breakStart && !data.breakEnd) {
+                currentBreaks.push(data);
+            } else if (data.breakStart && data.breakEnd) {
+                completedBreaks.push(data);
+            }
+        });
+        
+        // Get long break notifications
+        const notifSnap = await db.collection('notifications')
+            .where('type', '==', 'long_break')
+            .where('date', '==', today)
+            .get();
+        
+        const longBreaks = [];
+        notifSnap.forEach(d => longBreaks.push(d.data()));
+        
+        main.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#fef3c7;">☕</div>
+                    <div class="stat-value" style="color:#f59e0b;">${currentBreaks.length}</div>
+                    <div class="stat-label">On Break Now</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#fee2e2;">⚠️</div>
+                    <div class="stat-value" style="color:#ef4444;">${longBreaks.length}</div>
+                    <div class="stat-label">Long Breaks (>1h)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#d1fae5;">✅</div>
+                    <div class="stat-value" style="color:#10b981;">${completedBreaks.length}</div>
+                    <div class="stat-label">Break Completed</div>
+                </div>
+            </div>
+            
+            ${currentBreaks.length > 0 ? `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">☕ Currently On Break</span>
+                        <span class="badge" style="background:#fef3c7;color:#f59e0b;">${currentBreaks.length}</span>
                     </div>
-                    
-                    <div class="card">
-                        <div class="card-title">All Employees (${employees.length})</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Username</th>
-                                        <th>Phone</th>
-                                        <th>Salary</th>
-                                        <th>Role</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${employees.map(emp => `
+                    ${currentBreaks.map(b => `
+                        <div style="padding:15px;background:#fef3c7;border-radius:10px;margin-bottom:10px;">
+                            <strong>${b.employeeName}</strong>
+                            <p style="font-size:13px;color:#666;margin-top:5px;">Break started: ${b.breakStart}</p>
+                            <button class="btn btn-info btn-sm" style="margin-top:8px;" onclick="callEmp('${b.phone}')">📞 Call</button>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            
+            ${longBreaks.length > 0 ? `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">⚠️ Long Break Alerts</span>
+                        <span class="badge badge-absent">${longBreaks.length}</span>
+                    </div>
+                    ${longBreaks.map(b => `
+                        <div style="padding:15px;background:#fee2e2;border-radius:10px;margin-bottom:10px;">
+                            <strong>${b.employeeName}</strong>
+                            <p style="font-size:13px;color:#666;margin-top:5px;">${b.message}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            
+            ${completedBreaks.length > 0 ? `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📋 Completed Breaks Today</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${completedBreaks.map(b => {
+                                    const isLong = (b.breakDuration || 0) > 1;
+                                    return `
                                         <tr>
-                                            <td><strong>${emp.name}</strong></td>
-                                            <td>${emp.username}</td>
-                                            <td>${emp.phone || '-'}</td>
-                                            <td>₹${emp.salary}</td>
-                                            <td><span class="badge ${emp.role === 'hr' ? 'badge-emergency' : 'badge-present'}">${emp.role}</span></td>
-                                            <td>
-                                                ${emp.role !== 'hr' ? `
-                                                    <button class="btn btn-danger btn-sm" onclick="deleteEmployee('${emp.id}', '${emp.name}')">🗑️ Delete</button>
-                                                ` : '<span style="color: #999;">-</span>'}
-                                            </td>
+                                            <td><strong>${b.employeeName}</strong></td>
+                                            <td>${b.breakStart}</td>
+                                            <td>${b.breakEnd}</td>
+                                            <td>${(b.breakDuration || 0).toFixed(2)}h</td>
+                                            <td><span class="badge ${isLong ? 'badge-absent' : 'badge-present'}">${isLong ? '⚠️ Long' : '✅ Normal'}</span></td>
                                         </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
                     </div>
-                `;
-            } catch (error) {
-                console.error('Employee management error:', error);
-                showToast('Error loading employees');
-            }
-        }
-
-        function openAddEmployeeModal() {
-            document.getElementById('addEmployeeModal').classList.add('active');
-            document.getElementById('addEmployeeForm').reset();
-        }
-
-        function closeAddEmployeeModal() {
-            document.getElementById('addEmployeeModal').classList.remove('active');
-        }
-
-        document.getElementById('addEmployeeForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('empName').value.trim();
-            const username = document.getElementById('empUsername').value.trim();
-            const password = document.getElementById('empPassword').value;
-            const phone = document.getElementById('empPhone').value.trim();
-            const salary = parseInt(document.getElementById('empSalary').value);
-            
-            try {
-                const existingUser = await db.collection('employees').where('username', '==', username).get();
-                
-                if (!existingUser.empty) {
-                    showToast('❌ Username already exists');
-                    return;
-                }
-                
-                const employeeId = 'emp' + Date.now();
-                
-                await db.collection('employees').doc(employeeId).set({
-                    id: employeeId,
-                    name: name,
-                    username: username,
-                    password: password,
-                    phone: phone,
-                    salary: salary,
-                    role: 'employee'
-                });
-                
-                showToast('✅ Employee added successfully!');
-                closeAddEmployeeModal();
-                showEmployeeManagement();
-            } catch (error) {
-                console.error('Add employee error:', error);
-                showToast('❌ Failed to add employee');
-            }
-        });
-
-        async function deleteEmployee(employeeId, employeeName) {
-            if (confirm(`Are you sure you want to delete ${employeeName}?`)) {
-                try {
-                    await db.collection('employees').doc(employeeId).delete();
-                    showToast('✅ Employee deleted');
-                    showEmployeeManagement();
-                } catch (error) {
-                    console.error('Delete error:', error);
-                    showToast('❌ Failed to delete employee');
-                }
-            }
-        }
-
-        // ==================== LEAVE REQUESTS ====================
-        async function showLeaveRequests() {
-            const mainContent = document.getElementById('mainContent');
-            
-            try {
-                const snapshot = await db.collection('leaveRequests').orderBy('timestamp', 'desc').get();
-                const requests = [];
-                snapshot.forEach(doc => requests.push({ id: doc.id, ...doc.data() }));
-                
-                mainContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-title">🏖️ Leave Requests (${requests.length})</div>
-                        ${requests.length === 0 ? '<p style="color: #666;">No leave requests</p>' : ''}
-                        ${requests.map(req => `
-                            <div style="padding: 15px; border-bottom: 1px solid #f0f0f0; ${req.isEmergency ? 'background: #ffebee; border-radius: 8px;' : ''}">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                    <div>
-                                        <strong>${req.employeeName}</strong>
-                                        <span style="font-size: 12px; color: #666;"> - ${req.leaveType}</span>
-                                        ${req.isEmergency ? '<span class="badge badge-emergency" style="margin-left: 8px;">EMERGENCY</span>' : ''}
-                                        <p style="font-size: 14px; color: #666; margin-top: 5px;">${req.reason}</p>
-                                        <p style="font-size: 12px; color: #999;">Date: ${req.leaveDate}</p>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <span class="badge ${req.status === 'approved' ? 'badge-approved' : req.status === 'rejected' ? 'badge-rejected' : 'badge-pending'}">${req.status.toUpperCase()}</span>
-                                        ${req.status === 'pending' ? `
-                                            <div style="margin-top: 8px;">
-                                                <button class="btn btn-success btn-sm" onclick="approveLeave('${req.id}')">✅</button>
-                                                <button class="btn btn-danger btn-sm" onclick="rejectLeave('${req.id}')">❌</button>
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Leave requests error:', error);
-                showToast('Error loading leave requests');
-            }
-        }
-
-        async function approveLeave(leaveId) {
-            try {
-                await db.collection('leaveRequests').doc(leaveId).update({ status: 'approved' });
-                showToast('✅ Leave approved');
-                if (currentPage === 'leaveRequests') showLeaveRequests();
-                else showHRDashboard();
-            } catch (error) {
-                console.error('Approve error:', error);
-                showToast('Error approving leave');
-            }
-        }
-
-        async function rejectLeave(leaveId) {
-            try {
-                await db.collection('leaveRequests').doc(leaveId).update({ status: 'rejected' });
-                showToast('❌ Leave rejected');
-                if (currentPage === 'leaveRequests') showLeaveRequests();
-                else showHRDashboard();
-            } catch (error) {
-                console.error('Reject error:', error);
-                showToast('Error rejecting leave');
-            }
-        }
-
-        // ==================== NOT PRESENT LIST ====================
-        async function showNotPresentList() {
-            const mainContent = document.getElementById('mainContent');
-            
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                
-                const employeesSnapshot = await db.collection('employees').get();
-                const employees = [];
-                employeesSnapshot.forEach(doc => {
-                    const emp = { id: doc.id, ...doc.data() };
-                    if (emp.role === 'employee') employees.push(emp);
-                });
-                
-                const attendanceSnapshot = await db.collection('attendance').where('date', '==', today).get();
-                const presentEmployees = new Set();
-                attendanceSnapshot.forEach(doc => presentEmployees.add(doc.data().employeeId));
-                
-                const absentEmployees = employees.filter(emp => !presentEmployees.has(emp.id));
-                
-                mainContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-title">❌ Not Present Today (${absentEmployees.length})</div>
-                        ${absentEmployees.length === 0 ? '<p style="color: #666;">All employees are present! 🎉</p>' : ''}
-                        ${absentEmployees.map(emp => `
-                            <div class="employee-item">
-                                <div class="employee-info">
-                                    <div class="employee-avatar">${getInitials(emp.name)}</div>
-                                    <div>
-                                        <div class="employee-name">${emp.name}</div>
-                                        <div class="employee-username">${emp.phone || 'No phone'}</div>
-                                    </div>
-                                </div>
-                                <button class="btn btn-info btn-sm" onclick="callEmployee('${emp.phone}')">📞 Call</button>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Not present error:', error);
-                showToast('Error loading absent list');
-            }
-        }
-
-        function callEmployee(phone) {
-            if (phone) {
-                window.location.href = `tel:${phone}`;
-            } else {
-                showToast('No phone number available');
-            }
-        }
-
-        // ==================== SALARY CALCULATOR ====================
-        async function showSalaryCalculator() {
-            const mainContent = document.getElementById('mainContent');
-            
-            try {
-                const snapshot = await db.collection('employees').get();
-                const employees = [];
-                snapshot.forEach(doc => {
-                    const emp = { id: doc.id, ...doc.data() };
-                    if (emp.role === 'employee') employees.push(emp);
-                });
-                
-                mainContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-title">💰 Salary Calculator</div>
-                        <div class="form-group">
-                            <label class="form-label">Select Employee</label>
-                            <select class="form-input" id="salaryEmployee" onchange="calculateEmployeeSalary()" style="padding-left: 15px;">
-                                <option value="">Select employee...</option>
-                                ${employees.map(emp => `
-                                    <option value="${emp.id}" data-salary="${emp.salary}" data-name="${emp.name}">
-                                        ${emp.name} (₹${emp.salary}/day)
-                                    </option>
-                                `).join('')}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Period</label>
-                            <select class="form-input" id="salaryPeriod" onchange="calculateEmployeeSalary()" style="padding-left: 15px;">
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="card" id="salaryResult" style="display:none;">
-                        <div class="card-title">Salary Details</div>
-                        <div id="salaryDetails"></div>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Salary calculator error:', error);
-                showToast('Error loading salary calculator');
-            }
-        }
-
-        async function calculateEmployeeSalary() {
-            const employeeSelect = document.getElementById('salaryEmployee');
-            const periodSelect = document.getElementById('salaryPeriod');
-            
-            if (!employeeSelect.value) return;
-            
-            const employeeId = employeeSelect.value;
-            const employeeName = employeeSelect.options[employeeSelect.selectedIndex].dataset.name;
-            const dailySalary = parseInt(employeeSelect.options[employeeSelect.selectedIndex].dataset.salary);
-            const period = periodSelect.value;
-            
-            try {
-                const snapshot = await db.collection('attendance').where('employeeId', '==', employeeId).get();
-                const records = [];
-                snapshot.forEach(doc => records.push(doc.data()));
-                
-                let presentDays = 0;
-                const now = new Date();
-                
-                if (period === 'daily') {
-                    const today = now.toISOString().split('T')[0];
-                    presentDays = records.filter(r => r.date === today && r.status === 'present').length;
-                } else if (period === 'weekly') {
-                    const weekStart = new Date(now);
-                    weekStart.setDate(now.getDate() - 7);
-                    const weekStartStr = weekStart.toISOString().split('T')[0];
-                    presentDays = records.filter(r => r.date >= weekStartStr && r.status === 'present').length;
-                } else {
-                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                    const monthStartStr = monthStart.toISOString().split('T')[0];
-                    presentDays = records.filter(r => r.date >= monthStartStr && r.status === 'present').length;
-                }
-                
-                const totalSalary = presentDays * dailySalary;
-                
-                document.getElementById('salaryResult').style.display = 'block';
-                document.getElementById('salaryDetails').innerHTML = `
-                    <h3 style="margin-bottom: 15px;">${employeeName}</h3>
-                    <p><strong>Period:</strong> ${period.toUpperCase()}</p>
-                    <p><strong>Present Days:</strong> ${presentDays}</p>
-                    <p><strong>Daily Rate:</strong> ₹${dailySalary}</p>
-                    <hr style="margin: 15px 0; border: 1px solid #e0e0e0;">
-                    <h3 style="color: #00c853;">Total Salary: ₹${totalSalary.toFixed(2)}</h3>
-                `;
-            } catch (error) {
-                console.error('Salary calculation error:', error);
-                showToast('Error calculating salary');
-            }
-        }
-
-        // ==================== EMPLOYEE DASHBOARD ====================
-        async function showEmployeeDashboard() {
-            const mainContent = document.getElementById('mainContent');
-            
-            try {
-                const snapshot = await db.collection('attendance').where('employeeId', '==', currentUser.id).get();
-                const records = [];
-                snapshot.forEach(doc => records.push(doc.data()));
-                
-                const now = new Date();
-                const monthRecords = records.filter(r => {
-                    const d = new Date(r.date);
-                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                });
-                
-                const presentDays = monthRecords.filter(r => r.status === 'present').length;
-                const absentDays = monthRecords.filter(r => r.status === 'absent').length;
-                const rate = presentDays + absentDays > 0 ? Math.round((presentDays / (presentDays + absentDays)) * 100) : 0;
-                
-                const today = now.toISOString().split('T')[0];
-                const todayRecord = records.find(r => r.date === today);
-                
-                mainContent.innerHTML = `
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">✅</div>
-                            <div class="stat-value" style="color: #00c853;">${presentDays}</div>
-                            <div class="stat-label">Present This Month</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">❌</div>
-                            <div class="stat-value" style="color: #ff1744;">${absentDays}</div>
-                            <div class="stat-label">Absent This Month</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">📈</div>
-                            <div class="stat-value" style="color: #2979ff;">${rate}%</div>
-                            <div class="stat-label">Attendance Rate</div>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-title">Today's Status</div>
-                        <p style="margin-bottom: 10px;">📅 ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                        ${todayRecord ? `
-                            <p>Status: <strong>${todayRecord.status === 'present' ? '✅ Present' : todayRecord.status === 'leave' ? '🏖️ On Leave' : '❌ Absent'}</strong></p>
-                            ${todayRecord.checkInTime ? `<p>Check-in: ${todayRecord.checkInTime}</p>` : ''}
-                            ${todayRecord.checkOutTime ? `<p>Check-out: ${todayRecord.checkOutTime}</p>` : ''}
-                        ` : '<p style="color: #666;">Not marked yet</p>'}
-                    </div>
-                    
-                    ${!todayRecord || !todayRecord.checkInTime ? `
-                        <button class="btn btn-success btn-block" style="margin-bottom: 10px;" onclick="checkIn()">
-                            📸 Check In Now
-                        </button>
-                    ` : ''}
-                    ${todayRecord && todayRecord.checkInTime && !todayRecord.checkOutTime ? `
-                        <button class="btn btn-danger btn-block" style="margin-bottom: 10px;" onclick="checkOut()">
-                            🚪 Check Out
-                        </button>
-                    ` : ''}
-                    <button class="btn btn-warning btn-block" style="margin-bottom: 10px;" onclick="showPage('leaveRequest')">
-                        🏖️ Apply for Leave
-                    </button>
-                    <button class="btn btn-info btn-block" onclick="showPage('outsideWork')">
-                        📸 Outside Work
-                    </button>
-                `;
-            } catch (error) {
-                console.error('Employee dashboard error:', error);
-                showToast('Error loading dashboard');
-            }
-        }
-
-        // ==================== CHECK IN / CHECK OUT ====================
-        async function checkIn() {
-            try {
-                document.getElementById('photoInput').click();
-                
-                document.getElementById('photoInput').onchange = async function(e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        showToast('📸 Uploading photo...');
-                        const reader = new FileReader();
-                        reader.onload = async function(event) {
-                            const photoData = event.target.result;
-                            
-                            try {
-                                const base64Data = photoData.split(',')[1];
-                                await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                                    method: 'POST',
-                                    mode: 'no-cors',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        photo: base64Data,
-                                        employeeId: currentUser.id,
-                                        employeeName: currentUser.name,
-                                        photoType: 'checkin',
-                                        attendanceDate: new Date().toISOString().split('T')[0],
-                                        mimeType: 'image/jpeg'
-                                    })
-                                });
-                            } catch (uploadError) {
-                                console.error('Upload error:', uploadError);
-                            }
-                            
-                            const today = new Date().toISOString().split('T')[0];
-                            await db.collection('attendance').add({
-                                employeeId: currentUser.id,
-                                employeeName: currentUser.name,
-                                date: today,
-                                checkInTime: new Date().toLocaleTimeString(),
-                                status: 'present',
-                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                            
-                            showToast('✅ Checked in successfully!');
-                            showEmployeeDashboard();
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                };
-            } catch (error) {
-                console.error('Check-in error:', error);
-                showToast('❌ Check-in failed');
-            }
-        }
-
-        async function checkOut() {
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('photoInput').click();
-                
-                document.getElementById('photoInput').onchange = async function(e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        showToast('📸 Uploading photo...');
-                        const reader = new FileReader();
-                        reader.onload = async function(event) {
-                            const photoData = event.target.result;
-                            
-                            try {
-                                const base64Data = photoData.split(',')[1];
-                                await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                                    method: 'POST',
-                                    mode: 'no-cors',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        photo: base64Data,
-                                        employeeId: currentUser.id,
-                                        employeeName: currentUser.name,
-                                        photoType: 'checkout',
-                                        attendanceDate: today,
-                                        mimeType: 'image/jpeg'
-                                    })
-                                });
-                            } catch (uploadError) {
-                                console.error('Upload error:', uploadError);
-                            }
-                            
-                            const snapshot = await db.collection('attendance')
-                                .where('employeeId', '==', currentUser.id)
-                                .where('date', '==', today)
-                                .get();
-                            
-                            if (!snapshot.empty) {
-                                await snapshot.docs[0].ref.update({
-                                    checkOutTime: new Date().toLocaleTimeString()
-                                });
-                            }
-                            
-                            showToast('✅ Checked out successfully!');
-                            showEmployeeDashboard();
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                };
-            } catch (error) {
-                console.error('Check-out error:', error);
-                showToast('❌ Check-out failed');
-            }
-        }
-
-        // ==================== ATTENDANCE CALENDAR ====================
-        function showAttendanceCalendar() {
-            const mainContent = document.getElementById('mainContent');
-            
-            db.collection('attendance').where('employeeId', '==', currentUser.id).get()
-                .then(snapshot => {
-                    const records = [];
-                    snapshot.forEach(doc => records.push(doc.data()));
-                    
-                    const year = selectedDate.getFullYear();
-                    const month = selectedDate.getMonth();
-                    const monthRecords = records.filter(r => {
-                        const d = new Date(r.date);
-                        return d.getFullYear() === year && d.getMonth() === month;
-                    });
-                    
-                    const firstDay = new Date(year, month, 1).getDay();
-                    const daysInMonth = new Date(year, month + 1, 0).getDate();
-                    
-                    let html = `
-                        <div class="card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h3>${selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
-                                <div style="display: flex; gap: 10px;">
-                                    <button class="btn btn-sm" onclick="changeMonth(-1)">◀</button>
-                                    <button class="btn btn-sm" onclick="changeMonth(1)">▶</button>
-                                </div>
-                            </div>
-                            <div class="calendar-grid">
-                                <div class="calendar-weekday">Sun</div>
-                                <div class="calendar-weekday">Mon</div>
-                                <div class="calendar-weekday">Tue</div>
-                                <div class="calendar-weekday">Wed</div>
-                                <div class="calendar-weekday">Thu</div>
-                                <div class="calendar-weekday">Fri</div>
-                                <div class="calendar-weekday">Sat</div>
-                    `;
-                    
-                    for (let i = 0; i < firstDay; i++) html += '<div></div>';
-                    
-                    for (let day = 1; day <= daysInMonth; day++) {
-                        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                        const record = monthRecords.find(r => r.date === dateStr);
-                        let cls = 'day-future';
-                        let content = day;
-                        
-                        if (record) {
-                            if (record.status === 'present') { cls = 'day-present'; content = 'P'; }
-                            else if (record.status === 'leave') { cls = 'day-leave'; content = 'L'; }
-                            else { cls = 'day-absent'; content = 'A'; }
-                        } else if (dateStr < new Date().toISOString().split('T')[0]) {
-                            cls = 'day-absent'; content = 'A';
-                        }
-                        
-                        html += `<div class="calendar-day ${cls}">${content}</div>`;
-                    }
-                    
-                    html += `
-                            </div>
-                            <div style="margin-top: 20px; display: flex; gap: 15px; font-size: 13px; flex-wrap: wrap;">
-                                <span>✅ P = Present</span>
-                                <span>❌ A = Absent</span>
-                                <span>🏖️ L = Leave</span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    mainContent.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Calendar error:', error);
-                    showToast('Error loading calendar');
-                });
-        }
-
-        function changeMonth(delta) {
-            selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + delta, 1);
-            showAttendanceCalendar();
-        }
-
-        // ==================== LEAVE REQUEST FORM ====================
-        function showLeaveRequestForm() {
-            const mainContent = document.getElementById('mainContent');
-            
-            mainContent.innerHTML = `
-                <div class="card">
-                    <div class="card-title">🏖️ Apply for Leave</div>
-                    <div class="form-group">
-                        <label class="form-label">Leave Type</label>
-                        <select class="form-input" id="leaveType" style="padding-left: 15px;">
-                            <option value="">Select type</option>
-                            <option value="planned">Planned Leave (Function/Event)</option>
-                            <option value="emergency">Emergency Leave (Hospital)</option>
-                            <option value="sick">Sick Leave</option>
-                            <option value="family">Family Event</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Date</label>
-                        <input type="date" class="form-input" id="leaveDate" style="padding-left: 15px;">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Reason</label>
-                        <textarea class="form-input" id="leaveReason" rows="4" placeholder="Enter reason for leave" style="padding-left: 15px;"></textarea>
-                    </div>
-                    <button class="btn btn-warning btn-block" onclick="submitLeaveRequest()">Submit Leave Request</button>
                 </div>
-            `;
-        }
-
-        async function submitLeaveRequest() {
-            const leaveType = document.getElementById('leaveType').value;
-            const leaveDate = document.getElementById('leaveDate').value;
-            const leaveReason = document.getElementById('leaveReason').value;
+            ` : ''}
             
-            if (!leaveType || !leaveDate || !leaveReason) {
-                showToast('❌ Please fill all fields');
-                return;
-            }
+            ${currentBreaks.length === 0 && completedBreaks.length === 0 ? `
+                <div class="card">
+                    <p style="color:#666;text-align:center;">No breaks recorded today</p>
+                </div>
+            ` : ''}
+        `;
+    } catch (error) {
+        console.error('Breaks error:', error);
+        showToast('Error loading breaks');
+    }
+}
+
+// Add break menu item for HR
+function addBreakMenuItem() {
+    const menu = document.getElementById('menu');
+    if (currentUser.role === 'hr' && menu) {
+        // Check if break menu already exists
+        if (!document.getElementById('menu-breaks')) {
+            const breakItem = document.createElement('li');
+            breakItem.className = 'menu-item';
+            breakItem.id = 'menu-breaks';
+            breakItem.onclick = function() { showPage('breaks'); };
+            breakItem.innerHTML = '<span class="menu-icon">☕</span> Break Monitoring';
+            menu.appendChild(breakItem);
+        }
+    }
+}
+
+// Update showPage function to handle breaks
+function updateShowPageForBreaks() {
+    const oldShowPage = showPage;
+    showPage = function(page) {
+        if (page === 'breaks' && currentUser.role === 'hr') {
+            currentPage = page;
+            document.getElementById('pageTitle').textContent = 'Break Monitoring';
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+            const el = document.getElementById('menu-breaks');
+            if (el) el.classList.add('active');
+            toggleSidebar(false);
+            showBreaks();
+        } else {
+            oldShowPage(page);
+        }
+    };
+}
+
+// Modify checkIn to include break fields
+async function checkInWithBreak() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('photoInput').click();
+    document.getElementById('photoInput').onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        showToast('📸 Uploading photo...');
+        const reader = new FileReader();
+        reader.onload = async function(ev) {
+            const photoData = ev.target.result;
             
             try {
-                await db.collection('leaveRequests').add({
-                    employeeId: currentUser.id,
-                    employeeName: currentUser.name,
-                    leaveType: leaveType,
-                    leaveDate: leaveDate,
-                    reason: leaveReason,
-                    status: 'pending',
-                    isEmergency: leaveType === 'emergency',
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                const base64 = photoData.split(',')[1];
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        photo: base64,
+                        employeeId: currentUser.id,
+                        employeeName: currentUser.name,
+                        photoType: 'checkin',
+                        attendanceDate: today,
+                        mimeType: 'image/jpeg'
+                    })
                 });
-                
-                showToast('✅ Leave request submitted!');
-                showPage('dashboard');
-            } catch (error) {
-                console.error('Leave request error:', error);
-                showToast('❌ Failed to submit leave request');
-            }
-        }
+            } catch (err) {}
+            
+            await db.collection('attendance').add({
+                employeeId: currentUser.id,
+                employeeName: currentUser.name,
+                date: today,
+                checkInTime: new Date().toLocaleTimeString(),
+                checkInPhoto: photoData,
+                status: 'present',
+                breakStart: null,
+                breakEnd: null,
+                breakDuration: 0,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            showToast('✅ Checked in!');
+            showEmpDashboard();
+        };
+        reader.readAsDataURL(file);
+    };
+}
 
-        // ==================== OUTSIDE WORK ====================
-        function showOutsideWorkForm() {
-            const mainContent = document.getElementById('mainContent');
-            
-            mainContent.innerHTML = `
-                <div class="card">
-                    <div class="card-title">📸 Outside Work</div>
-                    <div class="form-group">
-                        <label class="form-label">Reason</label>
-                        <select class="form-input" id="outsideReason" style="padding-left: 15px;">
-                            <option value="">Select reason</option>
-                            <option value="client">Client Visit</option>
-                            <option value="delivery">Delivery</option>
-                            <option value="purchase">Purchase Materials</option>
-                            <option value="bank">Bank Work</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-input" id="outsideDescription" rows="3" placeholder="Enter details" style="padding-left: 15px;"></textarea>
-                    </div>
-                    <button class="btn btn-info btn-block" onclick="uploadOutsidePhoto()">📸 Take Photo & Submit</button>
-                </div>
-            `;
-        }
+// Initialize break features
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        addBreakMenuItem();
+        updateShowPageForBreaks();
+    }, 1000);
+});
 
-        async function uploadOutsidePhoto() {
-            const reason = document.getElementById('outsideReason').value;
-            const description = document.getElementById('outsideDescription').value;
-            
-            if (!reason) {
-                showToast('❌ Please select reason');
-                return;
-            }
-            
-            document.getElementById('photoInput').click();
-            
-            document.getElementById('photoInput').onchange = async function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    showToast('📸 Uploading photo...');
-                    const reader = new FileReader();
-                    reader.onload = async function(event) {
-                        const photoData = event.target.result;
-                        
-                        try {
-                            const base64Data = photoData.split(',')[1];
-                            await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                                method: 'POST',
-                                mode: 'no-cors',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    photo: base64Data,
-                                    employeeId: currentUser.id,
-                                    employeeName: currentUser.name,
-                                    photoType: 'outside',
-                                    attendanceDate: new Date().toISOString().split('T')[0],
-                                    mimeType: 'image/jpeg'
-                                })
-                            });
-                        } catch (uploadError) {
-                            console.error('Upload error:', uploadError);
-                        }
-                        
-                        await db.collection('outsideWork').add({
-                            employeeId: currentUser.id,
-                            employeeName: currentUser.name,
-                            reason: reason,
-                            description: description,
-                            startTime: new Date().toLocaleTimeString(),
-                            date: new Date().toISOString().split('T')[0],
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        
-                        showToast('✅ Outside work logged!');
-                        showPage('dashboard');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-        }
-    </script>
+console.log('✅ Break tracking system loaded');
+                        </script>
 </body>
 </html>
