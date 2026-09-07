@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f172a">
-    <title>AttendPro - Smart Attendance System</title>
+    <meta name="theme-color" content="#1e1b4b">
+    <title>AttendPro - Complete Attendance System</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
@@ -13,279 +13,235 @@
     
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --primary-light: #818cf8;
-            --success: #10b981;
-            --success-light: #d1fae5;
-            --danger: #ef4444;
-            --danger-light: #fee2e2;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --info: #3b82f6;
-            --info-light: #dbeafe;
-            --purple: #8b5cf6;
-            --purple-light: #ede9fe;
-            --bg: #f1f5f9;
+            --primary: #4338ca;
+            --primary-dark: #1e1b4b;
+            --accent: #0891b2;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --info: #2563eb;
+            --bg: #f4f5f9;
             --surface: #ffffff;
-            --text: #0f172a;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow: 0 4px 6px rgba(0,0,0,0.07);
-            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
-            --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
+            --text: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 1px 2px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04);
+            --shadow-lg: 0 20px 50px rgba(15,23,42,0.12);
             --radius: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 28px;
+        }
+        
+        [data-theme="dark"] {
+            --primary: #818cf8;
+            --primary-dark: #0b0e1a;
+            --accent: #22d3ee;
+            --bg: #0b0f1a;
+            --surface: #151b2b;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #26304a;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.55);
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
-            -webkit-font-smoothing: antialiased;
+            transition: all 0.3s;
         }
         
-        /* Splash */
         .splash {
             position: fixed; inset: 0; z-index: 9999;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #312e81 100%);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             display: flex; align-items: center; justify-content: center;
-            animation: splashOut 0.6s ease 2.5s forwards;
+            animation: fadeOut 0.5s ease 2s forwards;
         }
         .splash-inner { text-align: center; color: white; }
-        .splash-icon {
-            width: 100px; height: 100px; margin: 0 auto 30px;
-            background: linear-gradient(135deg, #4f46e5, #8b5cf6);
-            border-radius: 30px; display: flex; align-items: center; justify-content: center;
-            font-size: 50px; animation: float 2s ease-in-out infinite;
-            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.4);
-        }
-        .splash-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
-        .splash-subtitle { font-size: 15px; opacity: 0.7; font-weight: 300; }
-        .splash-loader { width: 50px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 40px auto 0; overflow: hidden; }
-        .splash-loader::after {
-            content: ''; display: block; width: 50%; height: 100%;
-            background: linear-gradient(90deg, #4f46e5, #8b5cf6);
-            border-radius: 2px; animation: load 1s ease-in-out infinite;
-        }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
+        .splash-icon { font-size: 80px; animation: pulse 1.5s infinite; }
+        .splash-title { font-size: 28px; font-weight: 900; margin: 20px 0; }
+        .splash-loader { width: 50px; height: 5px; background: rgba(255,255,255,0.3); border-radius: 3px; margin: 30px auto 0; overflow: hidden; }
+        .splash-loader::after { content: ''; display: block; width: 50%; height: 100%; background: white; animation: load 1s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
         @keyframes load { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
-        @keyframes splashOut { to { opacity: 0; visibility: hidden; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
         
-        /* Login */
         .login-screen {
             min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            padding: 20px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #312e81 100%);
-            position: relative; overflow: hidden;
-        }
-        .login-screen::before {
-            content: ''; position: absolute; width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(79,70,229,0.3), transparent);
-            top: -100px; right: -100px; border-radius: 50%;
-        }
-        .login-screen::after {
-            content: ''; position: absolute; width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(139,92,246,0.3), transparent);
-            bottom: -50px; left: -50px; border-radius: 50%;
+            padding: 20px; background: linear-gradient(135deg, var(--primary-dark), var(--primary));
         }
         .login-card {
-            background: white; border-radius: var(--radius-xl); padding: 40px 35px;
-            max-width: 420px; width: 100%; position: relative; z-index: 1;
-            box-shadow: var(--shadow-xl); animation: slideUp 0.5s ease;
+            background: var(--surface); border-radius: 24px; padding: 40px 35px;
+            max-width: 420px; width: 100%; box-shadow: var(--shadow-lg);
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        .login-logo {
-            width: 70px; height: 70px; margin: 0 auto 20px;
-            background: linear-gradient(135deg, #4f46e5, #8b5cf6);
-            border-radius: 20px; display: flex; align-items: center; justify-content: center;
-            font-size: 35px; box-shadow: 0 10px 25px rgba(79,70,229,0.3);
-        }
-        .login-title { text-align: center; font-size: 26px; font-weight: 800; margin-bottom: 5px; letter-spacing: -0.5px; }
-        .login-subtitle { text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; }
+        .login-logo { font-size: 60px; text-align: center; margin-bottom: 20px; }
+        .login-title { text-align: center; font-size: 24px; font-weight: 800; margin-bottom: 5px; }
+        .login-sub { text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; }
         .form-group { margin-bottom: 18px; }
-        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
-        .input-group { position: relative; }
-        .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
         .form-input {
-            width: 100%; padding: 14px 14px 14px 42px; border: 2px solid var(--border);
-            border-radius: 12px; font-size: 15px; font-family: inherit; transition: all 0.3s;
-            background: #fafbfc;
+            width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 12px;
+            font-size: 15px; font-family: inherit; background: var(--bg); color: var(--text);
         }
-        .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,0.1); background: white; }
+        .form-input:focus { outline: none; border-color: var(--primary); }
         .login-btn {
             width: 100%; padding: 15px; border: none; border-radius: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white;
-            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s;
-            font-family: inherit; margin-top: 10px;
-            box-shadow: 0 5px 15px rgba(79,70,229,0.3);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white;
+            font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
         }
-        .login-btn:active { transform: scale(0.98); }
-        .login-hint { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 20px; }
         
-        /* App */
         .app { display: none; min-height: 100vh; }
         .app.active { display: block; }
         
-        /* Header */
         .header {
-            background: white; padding: 15px 20px; display: flex; align-items: center;
+            background: var(--surface); padding: 14px 24px; display: flex; align-items: center;
             justify-content: space-between; position: sticky; top: 0; z-index: 100;
-            box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow); border-bottom: 1px solid var(--border);
         }
-        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
         .hamburger { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text); }
-        .header-title { font-size: 17px; font-weight: 700; }
+        .header-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
         .header-right { display: flex; align-items: center; gap: 10px; }
-        .logout-btn {
-            background: var(--danger-light); color: var(--danger); border: none;
-            padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer;
-            font-size: 13px; font-family: inherit; transition: all 0.3s;
+        .theme-btn {
+            background: var(--bg); border: 1px solid var(--border); width: 38px; height: 38px;
+            border-radius: 10px; cursor: pointer; font-size: 16px;
         }
-        .logout-btn:hover { background: var(--danger); color: white; }
+        .logout-btn {
+            background: rgba(220,38,38,0.08); color: var(--danger); border: 1px solid rgba(220,38,38,0.25);
+            padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px;
+        }
         
-        /* Sidebar */
         .sidebar {
-            position: fixed; top: 0; left: -300px; width: 300px; height: 100%;
-            background: white; z-index: 200; transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
-            box-shadow: var(--shadow-xl); overflow-y: auto;
+            position: fixed; top: 0; left: -300px; width: 280px; height: 100%;
+            background: var(--surface); z-index: 200; transition: left 0.3s;
+            box-shadow: var(--shadow-lg); overflow-y: auto; border-right: 1px solid var(--border);
         }
         .sidebar.active { left: 0; }
         .sidebar-header {
-            background: linear-gradient(135deg, #0f172a, #312e81);
-            color: white; padding: 30px 25px; position: relative; overflow: hidden;
+            background: linear-gradient(150deg, var(--primary-dark), var(--primary) 130%);
+            padding: 32px 20px 26px; text-align: center; color: white;
         }
-        .sidebar-header::before {
-            content: ''; position: absolute; width: 150px; height: 150px;
-            background: rgba(139,92,246,0.2); border-radius: 50%; top: -50px; right: -50px;
-        }
+        .sidebar-brand { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 18px; }
         .sidebar-avatar {
-            width: 60px; height: 60px; border-radius: 18px;
-            background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+            width: 56px; height: 56px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); margin: 0 auto 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 24px; font-weight: 800; margin-bottom: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            font-size: 20px; font-weight: 800; border: 2px solid rgba(255,255,255,0.5);
         }
-        .sidebar-name { font-size: 18px; font-weight: 700; }
-        .sidebar-role { font-size: 13px; opacity: 0.7; margin-top: 3px; }
-        .sidebar-menu { padding: 15px 0; list-style: none; }
+        .sidebar-name { font-size: 16px; font-weight: 700; }
+        .sidebar-role { font-size: 11px; opacity: 0.75; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .sidebar-menu { padding: 14px 0; list-style: none; }
         .menu-item {
-            padding: 13px 20px; margin: 2px 10px; display: flex; align-items: center;
-            gap: 12px; cursor: pointer; border-radius: 12px; font-size: 14px;
-            font-weight: 500; color: var(--text-secondary); transition: all 0.2s;
-            position: relative;
+            padding: 12px 18px; margin: 2px 10px; display: flex; align-items: center;
+            gap: 12px; cursor: pointer; border-radius: 10px; font-size: 13.5px;
+            font-weight: 500; color: var(--text-secondary); transition: all 0.15s;
         }
         .menu-item:hover { background: var(--bg); color: var(--text); }
-        .menu-item.active {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white; box-shadow: 0 5px 15px rgba(79,70,229,0.3);
-        }
-        .menu-icon { font-size: 20px; width: 25px; text-align: center; }
-        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; display: none; }
+        .menu-item.active { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; box-shadow: 0 4px 14px rgba(67,56,202,0.35); }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 150; display: none; backdrop-filter: blur(2px); }
         .sidebar-overlay.active { display: block; }
         
-        /* Main Content */
-        .main { padding: 20px; padding-bottom: 80px; max-width: 1200px; margin: 0 auto; }
+        .main { padding: 22px; padding-bottom: 100px; max-width: 1100px; margin: 0 auto; }
         
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .hero {
+            background: linear-gradient(150deg, var(--primary-dark), var(--primary) 130%);
+            border-radius: 20px; padding: 28px 26px; margin-bottom: 22px;
+            color: white; box-shadow: 0 12px 30px rgba(30,27,75,0.25);
+        }
+        .hero-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.01em; }
+        .hero-sub { font-size: 13.5px; opacity: 0.85; }
+        .hero-time { font-size: 36px; font-weight: 800; margin-top: 14px; letter-spacing: -0.02em; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .stat-card {
-            background: white; border-radius: var(--radius); padding: 18px;
-            box-shadow: var(--shadow-sm); border: 1px solid var(--border);
-            transition: all 0.3s; position: relative; overflow: hidden;
+            background: var(--surface); border-radius: var(--radius); padding: 16px 18px;
+            box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform 0.15s, box-shadow 0.15s;
         }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
         .stat-icon {
-            width: 40px; height: 40px; border-radius: 12px; display: flex;
-            align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px;
+            font-size: 18px; margin-bottom: 12px; width: 36px; height: 36px; border-radius: 10px;
+            background: var(--bg); display: flex; align-items: center; justify-content: center;
         }
-        .stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-        .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-top: 3px; }
+        .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+        .stat-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.03em; }
         
-        /* Card */
         .card {
-            background: white; border-radius: var(--radius); padding: 20px;
-            box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 18px;
+            background: var(--surface); border-radius: var(--radius); padding: 20px;
+            box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 16px;
         }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .card-title { font-size: 16px; font-weight: 700; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; flex-wrap: wrap; }
+        .card-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
         
-        /* Table */
-        .table-wrap { overflow-x: auto; border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            background: #f8fafc; padding: 12px 15px; text-align: left; font-size: 11px;
-            font-weight: 700; color: var(--text-secondary); text-transform: uppercase;
-            letter-spacing: 0.5px; border-bottom: 2px solid var(--border); white-space: nowrap;
-        }
-        td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        tr:hover { background: #fafbfc; }
-        
-        /* Badge */
-        .badge {
-            display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px;
-            border-radius: 20px; font-size: 11px; font-weight: 700;
-        }
-        .badge-present { background: var(--success-light); color: var(--success); }
-        .badge-absent { background: var(--danger-light); color: var(--danger); }
-        .badge-pending { background: var(--warning-light); color: var(--warning); }
-        .badge-emergency { background: var(--danger); color: white; }
-        .badge-outside { background: var(--info-light); color: var(--info); }
-        
-        /* Button */
         .btn {
-            padding: 10px 18px; border: none; border-radius: 10px; font-size: 13px;
-            font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit;
-            display: inline-flex; align-items: center; gap: 6px;
+            padding: 11px 18px; border: none; border-radius: 10px; font-size: 13.5px;
+            font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.08);
         }
-        .btn:active { transform: scale(0.95); }
-        .btn-primary { background: var(--primary); color: white; }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
         .btn-info { background: var(--info); color: white; }
-        .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 8px; }
         .btn-block { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+        .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 6px; }
         
-        /* Calendar */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .cal-weekday { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 8px 0; text-transform: uppercase; }
+        .badge {
+            display: inline-flex; padding: 4px 11px; border-radius: 20px;
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
+        }
+        .badge-present { background: rgba(5,150,105,0.12); color: var(--success); }
+        .badge-absent { background: rgba(220,38,38,0.12); color: var(--danger); }
+        .badge-pending { background: rgba(217,119,6,0.12); color: var(--warning); }
+        .badge-emergency { background: var(--danger); color: white; }
+        .badge-half { background: rgba(217,119,6,0.12); color: var(--warning); }
+        .badge-leave { background: rgba(37,99,235,0.12); color: var(--info); }
+        
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: var(--bg); padding: 11px 12px; text-align: left;
+            font-size: 10.5px; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid var(--border);
+        }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        tbody tr { transition: background 0.1s; }
+        tbody tr:hover { background: var(--bg); }
+        
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .cal-week { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 8px 0; }
         .cal-day {
             aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center;
-            justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s; position: relative;
+            justify-content: center; font-size: 12px; font-weight: 600;
         }
-        .cal-day:hover { transform: scale(1.1); box-shadow: var(--shadow); }
-        .cal-present { background: var(--success-light); color: var(--success); }
-        .cal-absent { background: var(--danger-light); color: var(--danger); }
-        .cal-half { background: var(--warning-light); color: var(--warning); }
-        .cal-leave { background: var(--info-light); color: var(--info); }
-        .cal-future { background: #f8fafc; color: var(--text-muted); }
+        .cal-present { background: rgba(16,185,129,0.2); color: #10b981; }
+        .cal-absent { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .cal-half { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .cal-leave { background: rgba(59,130,246,0.2); color: #3b82f6; }
+        .cal-future { background: var(--bg); color: var(--text-secondary); }
         .cal-today { border: 2px solid var(--primary); }
         
-        /* Toast */
-        .toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: white; padding: 14px 24px; border-radius: 12px;
-            font-size: 14px; font-weight: 500; z-index: 9999; display: none;
-            box-shadow: var(--shadow-xl); max-width: 90%;
-        }
-        .toast.show { display: block; animation: toastIn 0.3s ease; }
-        @keyframes toastIn { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
-        
-        /* Photo Modal */
+        .photo-thumb { width: 50px; height: 50px; border-radius: 8px; cursor: pointer; object-fit: cover; }
         .photo-modal {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
             z-index: 300; align-items: center; justify-content: center;
         }
         .photo-modal.active { display: flex; }
         .photo-modal img { max-width: 90%; max-height: 90%; border-radius: 15px; }
+        .camera-container { background: #000; border-radius: var(--radius); overflow: hidden; margin-bottom: 15px; }
+        .camera-container video { width: 100%; max-height: 400px; object-fit: cover; display: block; }
+        
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); color: var(--text); padding: 15px 25px; border-radius: 12px;
+            font-size: 14px; font-weight: 600; z-index: 9999; display: none;
+            box-shadow: var(--shadow-lg); max-width: 90%; border: 1px solid var(--border);
+        }
+        .toast.show { display: block; animation: toastIn 0.3s ease; }
+        @keyframes toastIn { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
         @media (min-width: 768px) {
             .sidebar { left: 0; }
@@ -296,44 +252,34 @@
 </head>
 <body>
 
-<!-- Splash -->
 <div class="splash" id="splash">
     <div class="splash-inner">
         <div class="splash-icon">📸</div>
         <div class="splash-title">AttendPro</div>
-        <div class="splash-subtitle">Smart Attendance Management</div>
         <div class="splash-loader"></div>
     </div>
 </div>
 
-<!-- Login -->
 <div class="login-screen" id="loginScreen">
     <div class="login-card">
         <div class="login-logo">📸</div>
         <div class="login-title">Welcome Back</div>
-        <div class="login-subtitle">Sign in to continue</div>
+        <div class="login-sub">Sign in to continue</div>
         <form id="loginForm">
             <div class="form-group">
                 <label class="form-label">Username</label>
-                <div class="input-group">
-                    <span class="input-icon">👤</span>
-                    <input type="text" class="form-input" id="username" placeholder="Enter username" required>
-                </div>
+                <input type="text" class="form-input" id="username" required>
             </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
-                <div class="input-group">
-                    <span class="input-icon">🔒</span>
-                    <input type="password" class="form-input" id="password" placeholder="Enter password" required>
-                </div>
+                <input type="password" class="form-input" id="password" required>
             </div>
             <button type="submit" class="login-btn">Sign In</button>
         </form>
-        <div class="login-hint">HR: hr/admin | Employee: emp1/1234</div>
+        <p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-top:15px;">Owner: owner/owner123 | HR: hr/admin | Emp: emp1/1234</p>
     </div>
 </div>
 
-<!-- App -->
 <div class="app" id="app">
     <div class="header">
         <div class="header-left">
@@ -341,6 +287,7 @@
             <span class="header-title" id="pageTitle">Dashboard</span>
         </div>
         <div class="header-right">
+            <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -348,6 +295,7 @@
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar(false)"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
+            <div class="sidebar-brand">📸 AttendPro</div>
             <div class="sidebar-avatar" id="avatar">U</div>
             <div class="sidebar-name" id="userName">User</div>
             <div class="sidebar-role" id="userRole">Role</div>
@@ -359,12 +307,12 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="photo-modal" id="photoModal" onclick="this.classList.remove('active')">
-    <img id="photoModalImg" src="">
-</div>
+<div class="photo-modal" id="photoModal" onclick="this.classList.remove('active')"><img id="photoModalImg" src=""></div>
 <input type="file" id="photoInput" accept="image/*" capture="user" style="display:none;">
+<input type="file" id="galleryInput" accept="image/*" style="display:none;">
 
 <script>
+// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyCNOriYLY3suu4IWocqVmlMoSpIGPwqPwk",
     authDomain: "newluckattendace.firebaseapp.com",
@@ -375,100 +323,99 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4BkhWgaP7QUyOuwCACKvwitm3wLZ_hAdcTbuSjqM7FUBZutr0iEEipWX8c1UWzqvf/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2uz_2GItZPg1i7Umtg7WhzuJrARmwTJmBbgxyj1vGroe3JmErjyFdxiOgDobIV-gb/exec";
 
 let currentUser = null;
-let currentPage = 'dashboard';
 let selectedMonth = new Date();
+let mediaStream = null;
+let photoAction = null;
+
+function toggleTheme() {
+    const b = document.body, btn = document.getElementById('themeBtn');
+    if (b.getAttribute('data-theme') === 'dark') {
+        b.removeAttribute('data-theme'); btn.textContent = '🌙'; localStorage.setItem('theme', 'light');
+    } else {
+        b.setAttribute('data-theme', 'dark'); btn.textContent = '☀️'; localStorage.setItem('theme', 'dark');
+    }
+}
+if (localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
 
 document.getElementById('loginForm').addEventListener('submit', handleLogin);
 document.addEventListener('DOMContentLoaded', checkAutoLogin);
 
 function checkAutoLogin() {
-    const saved = localStorage.getItem('currentUser');
-    if (saved) { currentUser = JSON.parse(saved); showApp(); }
+    const s = localStorage.getItem('currentUser');
+    if (s) { currentUser = JSON.parse(s); showApp(); }
 }
 
 async function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    
+    if (u === 'owner' && p === 'owner123') {
+        currentUser = { id: 'owner001', name: 'Business Owner', username: 'owner', role: 'owner', salary: 0, phone: '' };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        showApp(); return;
+    }
     
     try {
-        const snapshot = await db.collection('employees').get();
+        const snap = await db.collection('employees').get();
         let found = null;
-        snapshot.forEach(doc => {
+        snap.forEach(doc => {
             const emp = doc.data();
-            if (emp.username === username && emp.password === password) found = { id: doc.id, ...emp };
+            if (emp.username === u && emp.password === p) found = { id: doc.id, ...emp };
         });
-        if (found) {
-            currentUser = found;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showApp();
-        } else {
-            showToast('Invalid username or password');
-        }
-    } catch (err) { showToast('Login error: ' + err.message); }
+        if (found) { currentUser = found; localStorage.setItem('currentUser', JSON.stringify(currentUser)); showApp(); }
+        else { showToast('Invalid credentials'); }
+    } catch (err) { showToast('Login error'); }
 }
 
 function showApp() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').classList.add('active');
-    document.getElementById('avatar').textContent = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('avatar').textContent = currentUser.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     document.getElementById('userName').textContent = currentUser.name;
-    document.getElementById('userRole').textContent = currentUser.role === 'hr' ? 'HR Manager' : 'Employee';
+    document.getElementById('userRole').textContent = currentUser.role === 'owner' ? 'Owner' : currentUser.role === 'hr' ? 'HR Manager' : 'Employee';
     buildMenu();
-    showPage('dashboard');
+    if (currentUser.role === 'owner') showOwnerDashboard();
+    else if (currentUser.role === 'hr') showHRDashboard();
+    else showEmpDashboard();
 }
 
 function buildMenu() {
-    const menu = document.getElementById('menu');
-    const items = currentUser.role === 'hr' ? [
-        ['dashboard', '📊', 'Dashboard'],
-        ['todayAttendance', '✅', "Today's Attendance"],
-        ['photoVerify', '📸', 'Photo Verification'],
-        ['outsideWork', '📍', 'Outside Work'],
-        ['leaveRequests', '🏖️', 'Leave Requests'],
-        ['employees', '👥', 'Employees']
-    ] : [
-        ['dashboard', '📊', 'My Dashboard'],
-        ['leaveRequest', '🏖️', 'Leave Request'],
-        ['outsideWork', '📍', 'Outside Work']
-    ];
-    
-    menu.innerHTML = items.map(([id, icon, label]) => `
-        <li class="menu-item" id="menu-${id}" onclick="showPage('${id}')">
-            <span class="menu-icon">${icon}</span>${label}
-        </li>
-    `).join('');
-}
-
-function showPage(page) {
-    currentPage = page;
-    const titles = { dashboard: currentUser.role==='hr'?'HR Dashboard':'My Dashboard', todayAttendance:"Today's Attendance", photoVerify:'Photo Verification', outsideWork:'Outside Work', leaveRequests:'Leave Requests', employees:'Employees', leaveRequest:'Leave Request' };
-    document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
-    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-    const el = document.getElementById('menu-' + page);
-    if (el) el.classList.add('active');
-    toggleSidebar(false);
-    
-    if (currentUser.role === 'hr') {
-        if (page==='dashboard') showHRDashboard();
-        else if (page==='todayAttendance') showTodayAttendance();
-        else if (page==='photoVerify') showPhotoVerify();
-        else if (page==='outsideWork') showOutsideWorkHR();
-        else if (page==='leaveRequests') showLeaveRequests();
-        else if (page==='employees') showEmployees();
+    const m = document.getElementById('menu');
+    if (currentUser.role === 'owner') {
+        m.innerHTML = `
+            <li class="menu-item active" onclick="showOwnerDashboard()"><span>👑</span> Dashboard</li>
+            <li class="menu-item" onclick="showHRReview()"><span>👤</span> HR Attendance</li>
+            <li class="menu-item" onclick="showTopPerformers()"><span>🏆</span> Top Performers</li>
+            <li class="menu-item" onclick="showSalaryReport('daily')"><span>💰</span> Daily Wages</li>
+            <li class="menu-item" onclick="showSalaryReport('weekly')"><span>📅</span> Weekly Wages</li>
+            <li class="menu-item" onclick="showSalaryReport('monthly')"><span>🗓️</span> Monthly Wages</li>
+            <li class="menu-item" onclick="showManageEmployees()"><span>👥</span> Manage Employees</li>
+            <li class="menu-item" onclick="showLeaveRequests()"><span>🏖️</span> Leave Requests</li>`;
+    } else if (currentUser.role === 'hr') {
+        m.innerHTML = `
+            <li class="menu-item active" onclick="showHRDashboard()"><span>📊</span> My Dashboard</li>
+            <li class="menu-item" onclick="showNotifications()"><span>🔔</span> Notifications</li>
+            <li class="menu-item" onclick="showTodayAttendance()"><span>✅</span> Today's Attendance</li>
+            <li class="menu-item" onclick="showPhotoAudit()"><span>📸</span> Photo Audit</li>
+            <li class="menu-item" onclick="showMonthlyReport()"><span>📅</span> Monthly Report</li>
+            <li class="menu-item" onclick="showSalaryCalc()"><span>💰</span> Salary Calculator</li>
+            <li class="menu-item" onclick="showLeaveRequests()"><span>🏖️</span> Leave Requests</li>
+            <li class="menu-item" onclick="showManageEmployees()"><span>👥</span> Manage Employees</li>`;
     } else {
-        if (page==='dashboard') showEmpDashboard();
-        else if (page==='leaveRequest') showLeaveForm();
-        else if (page==='outsideWork') showOutsideForm();
+        m.innerHTML = `
+            <li class="menu-item active" onclick="showEmpDashboard()"><span>📊</span> My Dashboard</li>
+            <li class="menu-item" onclick="showMyAlerts()"><span>🔔</span> My Alerts</li>
+            <li class="menu-item" onclick="showHelp()"><span>📖</span> Guidelines</li>
+            <li class="menu-item" onclick="showLeaveForm()"><span>🏖️</span> Leave Request</li>`;
     }
 }
 
 function toggleSidebar(force) {
-    const s = document.getElementById('sidebar');
-    const o = document.getElementById('overlay');
+    const s = document.getElementById('sidebar'), o = document.getElementById('overlay');
     if (force === false) { s.classList.remove('active'); o.classList.remove('active'); }
     else { s.classList.toggle('active'); o.classList.toggle('active'); }
 }
@@ -482,887 +429,562 @@ function logout() {
 
 function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-function viewPhoto(url) {
-    document.getElementById('photoModalImg').src = url;
-    document.getElementById('photoModal').classList.add('active');
+function setTitle(t) { const el = document.getElementById('pageTitle'); if (el) el.textContent = t; }
+
+function renderError(err, context) {
+    console.error('AttendPro error in ' + context + ':', err);
+    const main = document.getElementById('mainContent');
+    if (main) {
+        main.innerHTML = `<div class="card" style="border:2px solid var(--danger);">
+            <div class="card-header"><span class="card-title" style="color:var(--danger);">⚠️ Couldn't load this page</span></div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Something went wrong while loading <strong>${context}</strong>. This is usually a Firestore permissions or connection issue.</p>
+            <p style="font-size:12px;font-family:monospace;background:var(--bg);padding:10px;border-radius:8px;word-break:break-word;">${(err && err.message) ? err.message : String(err)}</p>
+            <button class="btn btn-info btn-block" style="margin-top:12px;" onclick="location.reload()">🔄 Reload</button>
+        </div>`;
+    }
+    showToast('⚠️ Error loading ' + context);
 }
 
-function callEmp(phone) {
-    if (phone) window.location.href = 'tel:' + phone;
-    else showToast('No phone number');
-}
-
-function calcHours(inTime, outTime) {
-    if (!inTime || !outTime) return 0;
-    const today = new Date().toDateString();
-    const diff = new Date(today + ' ' + outTime) - new Date(today + ' ' + inTime);
+function calcHours(inT, outT) {
+    if (!inT || !outT) return 0;
+    const d = new Date().toDateString();
+    const diff = new Date(d + ' ' + outT) - new Date(d + ' ' + inT);
     return diff > 0 ? diff / 3600000 : 0;
 }
 
-// HR Dashboard
-async function showHRDashboard() {
+function callEmp(phone) { if (phone) window.location.href = 'tel:' + phone; }
+function viewPhoto(url) { document.getElementById('photoModalImg').src = url; document.getElementById('photoModal').classList.add('active'); }
+function isLate(t) { if (!t) return false; return new Date('2000-01-01 ' + t) > new Date('2000-01-01 10:30'); }
+function isEarlyLogout(t) { if (!t) return false; return new Date('2000-01-01 ' + t) < new Date('2000-01-01 19:00'); }
+
+// ==================== CAMERA FUNCTIONS ====================
+async function openCamera(type) {
+    photoAction = type;
     const main = document.getElementById('mainContent');
-    const today = new Date().toISOString().split('T')[0];
-    
+    const label = type === 'checkin' ? 'Check In' : type === 'checkout' ? 'Check Out' : 'Lunch';
+    main.innerHTML = `
+        <div class="card">
+            <div class="card-header"><span class="card-title">📸 ${label} Photo</span></div>
+            <div class="camera-container"><video id="videoElement" autoplay playsinline></video></div>
+            <button class="btn btn-success btn-block" onclick="capturePhoto()">📸 Capture</button>
+            <button class="btn btn-info btn-block" style="margin-top:10px;" onclick="openGallery()">🖼️ Gallery</button>
+            <button class="btn btn-danger btn-block" style="margin-top:10px;" onclick="showEmpDashboard()">Cancel</button>
+        </div>`;
     try {
-        const [empSnap, attSnap, leaveSnap, outsideSnap] = await Promise.all([
-            db.collection('employees').get(),
-            db.collection('attendance').where('date','==',today).get(),
-            db.collection('leaveRequests').where('status','==','pending').get(),
-            db.collection('outsideWork').where('date','==',today).get()
-        ]);
-        
-        const employees = [];
-        empSnap.forEach(d => { const e = d.data(); if (e.role==='employee') employees.push({id:d.id,...e}); });
-        
-        const attMap = {};
-        attSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
-        
-        const present = employees.filter(e => attMap[e.id]).length;
-        const absent = employees.length - present;
-        const leaves = leaveSnap.size;
-        const outside = outsideSnap.size;
-        
-        main.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-icon" style="background:var(--info-light)">👥</div><div class="stat-value">${employees.length}</div><div class="stat-label">Total Employees</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--success-light)">✅</div><div class="stat-value" style="color:var(--success)">${present}</div><div class="stat-label">Present Today</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--danger-light)">❌</div><div class="stat-value" style="color:var(--danger)">${absent}</div><div class="stat-label">Absent Today</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--warning-light)">🏖️</div><div class="stat-value" style="color:var(--warning)">${leaves}</div><div class="stat-label">Pending Leaves</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--purple-light)">📍</div><div class="stat-value" style="color:var(--purple)">${outside}</div><div class="stat-label">Outside Work</div></div>
-            </div>
-            <div class="card">
-                <div class="card-header"><span class="card-title">📋 Today's Overview</span><span class="badge badge-present">Live</span></div>
-                <p style="font-size:14px;margin-bottom:8px;">✅ <strong>${present}</strong> employees present</p>
-                <p style="font-size:14px;margin-bottom:8px;">❌ <strong>${absent}</strong> employees absent</p>
-                <p style="font-size:14px;">📍 <strong>${outside}</strong> employees outside</p>
-            </div>
-        `;
-    } catch(err) { showToast('Error: ' + err.message); }
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        document.getElementById('videoElement').srcObject = mediaStream;
+    } catch (e) { showToast('Camera denied. Use gallery.'); }
 }
 
-// Today's Attendance
-async function showTodayAttendance() {
-    const main = document.getElementById('mainContent');
-    const today = new Date().toISOString().split('T')[0];
-    
-    const [empSnap, attSnap] = await Promise.all([
-        db.collection('employees').get(),
-        db.collection('attendance').where('date','==',today).get()
-    ]);
-    
-    const employees = [];
-    empSnap.forEach(d => { const e = d.data(); if (e.role==='employee') employees.push({id:d.id,...e}); });
-    
-    const attMap = {};
-    attSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
-    
-    main.innerHTML = `
-        <div class="card">
-            <div class="card-header"><span class="card-title">✅ Today's Attendance</span><span class="badge badge-present">${new Date().toLocaleDateString()}</span></div>
-            <div class="table-wrap"><table>
-                <thead><tr><th>Employee</th><th>Status</th><th>Check-in</th><th>Hours</th><th>Photo</th><th>Action</th></tr></thead>
-                <tbody>
-                ${employees.map(e => {
-                    const att = attMap[e.id];
-                    const hours = att ? calcHours(att.checkInTime, att.checkOutTime) : 0;
-                    return `<tr>
-                        <td><strong>${e.name}</strong><br><small style="color:var(--text-muted)">${e.username}</small></td>
-                        <td><span class="badge ${att?'badge-present':'badge-absent'}">${att?'✅ Present':'❌ Absent'}</span></td>
-                        <td>${att?.checkInTime || '-'}</td>
-                        <td>${hours.toFixed(1)}h</td>
-                        <td>${att?.checkInPhoto ? `<span onclick="viewPhoto('${att.checkInPhoto}')" style="cursor:pointer">📸</span>` : '<span style="color:var(--danger)">❌</span>'}</td>
-                        <td><button class="btn btn-info btn-sm" onclick="callEmp('${e.phone}')">📞</button></td>
-                    </tr>`;
-                }).join('')}
-                </tbody>
-            </table></div>
-        </div>
-    `;
+function openGallery() {
+    document.getElementById('galleryInput').click();
+    document.getElementById('galleryInput').onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async function(ev) { await completePhoto(ev.target.result); };
+        reader.readAsDataURL(file);
+    };
 }
 
-// Photo Verification
-async function showPhotoVerify() {
-    const main = document.getElementById('mainContent');
-    const today = new Date().toISOString().split('T')[0];
-    
-    const attSnap = await db.collection('attendance').where('date','==',today).get();
-    const atts = [];
-    attSnap.forEach(d => atts.push(d.data()));
-    const missing = atts.filter(a => !a.checkInPhoto);
-    const withPhoto = atts.filter(a => a.checkInPhoto);
-    
-    main.innerHTML = `
-        <div class="card">
-            <div class="card-header"><span class="card-title">📸 Photo Verification</span></div>
-            <p style="font-size:14px;margin-bottom:15px;">✅ With Photo: <strong>${withPhoto.length}</strong> | ❌ Missing: <strong>${missing.length}</strong></p>
-        </div>
-        ${missing.length ? `<div class="card">
-            <div class="card-header"><span class="card-title">⚠️ Missing Photos</span><span class="badge badge-absent">${missing.length}</span></div>
-            ${missing.map(a => `<div style="padding:12px;background:var(--danger-light);border-radius:10px;margin-bottom:8px;"><strong>${a.employeeName}</strong><br><small>Check-in: ${a.checkInTime||'N/A'}</small></div>`).join('')}
-        </div>` : ''}
-        <div class="card">
-            <div class="card-header"><span class="card-title">📸 Photo Gallery</span></div>
-            ${withPhoto.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;">
-                ${withPhoto.map(a => `<div style="text-align:center;cursor:pointer" onclick="viewPhoto('${a.checkInPhoto}')"><img src="${a.checkInPhoto}" style="width:100%;height:100px;object-fit:cover;border-radius:10px;"><small>${a.employeeName}</small></div>`).join('')}
-            </div>` : '<p style="color:var(--text-muted)">No photos yet</p>'}
-        </div>
-    `;
+async function capturePhoto() {
+    const video = document.getElementById('videoElement');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const photoData = canvas.toDataURL('image/jpeg', 0.8);
+    if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+    await completePhoto(photoData);
 }
 
-// Outside Work HR
-async function showOutsideWorkHR() {
-    const main = document.getElementById('mainContent');
-    const today = new Date().toISOString().split('T')[0];
-    const snap = await db.collection('outsideWork').where('date','==',today).get();
-    const works = [];
-    snap.forEach(d => works.push(d.data()));
-    
-    main.innerHTML = `
-        <div class="card">
-            <div class="card-header"><span class="card-title">📍 Outside Work Today</span><span class="badge badge-outside">${works.length}</span></div>
-            ${works.length ? works.map(w => `
-                <div style="padding:15px;background:var(--info-light);border-radius:10px;margin-bottom:10px;">
-                    <strong>${w.employeeName}</strong>
-                    <p style="font-size:13px;color:var(--text-secondary);margin-top:5px;">Reason: ${w.reason}</p>
-                    <p style="font-size:13px;color:var(--text-secondary);">Time: ${w.startTime}</p>
-                    ${w.description ? `<p style="font-size:13px;color:var(--text-secondary);">Details: ${w.description}</p>` : ''}
-                    <button class="btn btn-info btn-sm" style="margin-top:8px;" onclick="callEmp('${w.phone}')">📞 Call</button>
-                </div>
-            `).join('') : '<p style="color:var(--text-muted)">No outside work logged</p>'}
-        </div>
-    `;
+async function completePhoto(photoData) {
+    const type = photoAction, today = new Date().toISOString().split('T')[0], time = new Date().toLocaleTimeString();
+    showToast('⬆️ Uploading photo...');
+    let driveUrl = null;
+    try {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_') ) {
+            throw new Error('APPS_SCRIPT_URL is not set to your deployed Apps Script URL');
+        }
+        const base64 = photoData.split(',')[1];
+        // Sent as text/plain to avoid a CORS preflight (Apps Script doesn't handle OPTIONS requests).
+        // See the companion Apps Script (Code.gs) that must be deployed for this to return a Drive URL.
+        const resp = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ photo: base64, employeeId: currentUser.id, employeeName: currentUser.name, photoType: type, attendanceDate: today, mimeType: 'image/jpeg' })
+        });
+        if (!resp.ok) throw new Error('Apps Script responded with HTTP ' + resp.status);
+        const result = await resp.json();
+        if (result && result.success === false) throw new Error('Apps Script error: ' + (result.error || 'unknown'));
+        if (result && result.url) driveUrl = result.url;
+        else throw new Error('Apps Script response had no url field: ' + JSON.stringify(result));
+    } catch (e) {
+        console.error('Drive upload failed:', e);
+        showToast('⚠️ Photo not saved to Drive: ' + e.message);
+    }
+
+    // driveUrl is what gets stored in Firestore. If the upload failed, we still record
+    // attendance (time is what matters most) but flag it so HR can spot missing photos.
+    if (type === 'checkin') {
+        await db.collection('attendance').add({ employeeId: currentUser.id, employeeName: currentUser.name, date: today, checkInTime: time, checkInPhoto: driveUrl, status: 'present', isLate: isLate(time), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        showToast(isLate(time) ? '⚠️ Late check-in!' : '✅ Checked in!');
+    } else if (type === 'checkout') {
+        const snap = await db.collection('attendance').where('employeeId', '==', currentUser.id).where('date', '==', today).get();
+        if (!snap.empty) { await snap.docs[0].ref.update({ checkOutTime: time, checkOutPhoto: driveUrl, isEarlyLogout: isEarlyLogout(time) }); }
+        showToast('✅ Checked out!');
+    } else if (type === 'lunch') {
+        const snap = await db.collection('attendance').where('employeeId', '==', currentUser.id).where('date', '==', today).get();
+        if (!snap.empty) { await snap.docs[0].ref.update({ lunchPhoto: driveUrl, lunchTime: time }); }
+        showToast('✅ Lunch photo uploaded!');
+    }
+    showEmpDashboard();
 }
 
-// Leave Requests
-async function showLeaveRequests() {
-    const main = document.getElementById('mainContent');
-    const snap = await db.collection('leaveRequests').orderBy('timestamp','desc').get();
-    const reqs = [];
-    snap.forEach(d => reqs.push({id:d.id,...d.data()}));
-    
-    main.innerHTML = `
-        <div class="card">
-            <div class="card-header"><span class="card-title">🏖️ Leave Requests</span><span class="badge badge-pending">${reqs.filter(r=>r.status==='pending').length} Pending</span></div>
-            ${reqs.length ? reqs.map(r => `
-                <div style="padding:15px;border-bottom:1px solid var(--border);${r.isEmergency?'background:var(--danger-light);border-radius:10px;':''}">
-                    <div style="display:flex;justify-content:space-between;align-items:start;">
-                        <div>
-                            <strong>${r.employeeName}</strong>
-                            ${r.isEmergency ? '<span class="badge badge-emergency" style="margin-left:8px;">EMERGENCY</span>' : ''}
-                            <p style="font-size:13px;color:var(--text-secondary);margin-top:5px;">${r.leaveType} - ${r.reason}</p>
-                            <p style="font-size:12px;color:var(--text-muted);">Date: ${r.leaveDate}</p>
-                        </div>
-                        <span class="badge ${r.status==='approved'?'badge-present':r.status==='rejected'?'badge-absent':'badge-pending'}">${r.status.toUpperCase()}</span>
-                    </div>
-                    ${r.status==='pending' ? `<div style="margin-top:10px;display:flex;gap:8px;">
-                        <button class="btn btn-success btn-sm" onclick="approveLeave('${r.id}')">✅ Approve</button>
-                        <button class="btn btn-danger btn-sm" onclick="rejectLeave('${r.id}')">❌ Reject</button>
-                    </div>` : ''}
-                </div>
-            `).join('') : '<p style="color:var(--text-muted)">No leave requests</p>'}
-        </div>
-    `;
-}
-
-async function approveLeave(id) {
-    await db.collection('leaveRequests').doc(id).update({status:'approved'});
-    showToast('✅ Leave approved');
-    showLeaveRequests();
-}
-async function rejectLeave(id) {
-    await db.collection('leaveRequests').doc(id).update({status:'rejected'});
-    showToast('❌ Leave rejected');
-    showLeaveRequests();
-}
-
-// Employees
-async function showEmployees() {
-    const main = document.getElementById('mainContent');
-    const snap = await db.collection('employees').get();
-    const emps = [];
-    snap.forEach(d => emps.push({id:d.id,...d.data()}));
-    
-    main.innerHTML = `
-        <div class="card">
-            <div class="card-header"><span class="card-title">👥 All Employees</span><span class="badge badge-present">${emps.length}</span></div>
-            <div class="table-wrap"><table>
-                <thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Salary</th></tr></thead>
-                <tbody>
-                ${emps.map(e => `<tr>
-                    <td><strong>${e.name}</strong></td>
-                    <td>${e.username}</td>
-                    <td>${e.phone||'-'}</td>
-                    <td><span class="badge ${e.role==='hr'?'badge-emergency':'badge-present'}">${e.role}</span></td>
-                    <td>₹${e.salary}</td>
-                </tr>`).join('')}
-                </tbody>
-            </table></div>
-        </div>
-    `;
-}
-
-// Employee Dashboard
+// ==================== EMPLOYEE DASHBOARD ====================
 async function showEmpDashboard() {
-    const main = document.getElementById('mainContent');
-    const today = new Date().toISOString().split('T')[0];
-    
     try {
-        const snap = await db.collection('attendance').where('employeeId','==',currentUser.id).get();
-        const records = [];
-        snap.forEach(d => records.push(d.data()));
-        
-        const now = new Date();
-        const monthRecords = records.filter(r => {
-            const d = new Date(r.date);
-            return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
-        });
-        
-        const presentDays = monthRecords.filter(r => r.checkInTime && r.checkOutTime).length;
-        const absentDays = monthRecords.filter(r => !r.checkInTime).length;
-        
-        let totalHours = 0, otHours = 0;
-        monthRecords.forEach(r => {
-            const h = calcHours(r.checkInTime, r.checkOutTime);
-            totalHours += h;
-            if (h > 9) otHours += (h - 9);
-        });
-        
-        const avgHours = presentDays ? (totalHours/presentDays).toFixed(1) : '0';
-        const todayRec = records.find(r => r.date === today);
-        const todayHours = calcHours(todayRec?.checkInTime, todayRec?.checkOutTime);
-        
-        main.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-icon" style="background:var(--success-light)">✅</div><div class="stat-value" style="color:var(--success)">${presentDays}</div><div class="stat-label">Present (Month)</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--danger-light)">❌</div><div class="stat-value" style="color:var(--danger)">${absentDays}</div><div class="stat-label">Absent (Month)</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--info-light)">⏰</div><div class="stat-value">${totalHours.toFixed(1)}h</div><div class="stat-label">Total Hours</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--warning-light)">📊</div><div class="stat-value">${avgHours}h</div><div class="stat-label">Avg Daily</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--danger-light)">🔥</div><div class="stat-value" style="color:var(--danger)">${otHours.toFixed(1)}h</div><div class="stat-label">Overtime</div></div>
-                <div class="stat-card"><div class="stat-icon" style="background:var(--purple-light)">📅</div><div class="stat-value" style="color:var(--purple)">${todayHours.toFixed(1)}h</div><div class="stat-label">Today</div></div>
+        setTitle('My Dashboard');
+    const main = document.getElementById('mainContent'), today = new Date().toISOString().split('T')[0];
+    const snap = await db.collection('attendance').where('employeeId', '==', currentUser.id).get();
+    const records = []; snap.forEach(d => records.push(d.data()));
+    const now = new Date();
+    const monthRecords = records.filter(r => { const d = new Date(r.date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+    const presentDays = monthRecords.filter(r => calcHours(r.checkInTime, r.checkOutTime) >= 8.5).length;
+    const halfDays = monthRecords.filter(r => { const h = calcHours(r.checkInTime, r.checkOutTime); return h >= 4.5 && h < 8.5; }).length;
+    const absentDays = monthRecords.filter(r => !r.checkInTime).length;
+    const lateDays = monthRecords.filter(r => r.isLate).length;
+    let totalHours = 0, otHours = 0;
+    monthRecords.forEach(r => { const h = calcHours(r.checkInTime, r.checkOutTime); totalHours += h; if (h > 9) otHours += (h - 9); });
+    const todayRec = records.find(r => r.date === today);
+    
+    main.innerHTML = `
+        <div class="hero">
+            <div class="hero-title">👋 Welcome, ${currentUser.name.split(' ')[0]}!</div>
+            <div class="hero-sub">${now.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long'})}</div>
+            <div class="hero-time" id="liveTime">${now.toLocaleTimeString()}</div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" style="color:#10b981;">${presentDays}</div><div class="stat-label">Present</div></div>
+            <div class="stat-card"><div class="stat-icon">🔶</div><div class="stat-value" style="color:#f59e0b;">${halfDays}</div><div class="stat-label">Half Days</div></div>
+            <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-value" style="color:#ef4444;">${absentDays}</div><div class="stat-label">Absent</div></div>
+            <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-value" style="color:#f59e0b;">${lateDays}</div><div class="stat-label">Late</div></div>
+            <div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-value">${totalHours.toFixed(1)}h</div><div class="stat-label">Hours</div></div>
+            <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-value" style="color:#ef4444;">${otHours.toFixed(1)}h</div><div class="stat-label">OT</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+            <button class="btn btn-success" onclick="openCamera('checkin')" ${todayRec?.checkInTime ? 'disabled' : ''}>📸 ${todayRec?.checkInTime ? 'Checked In' : 'Check In'}</button>
+            <button class="btn btn-warning" onclick="openCamera('lunch')" ${!todayRec?.checkInTime || todayRec?.lunchPhoto || todayRec?.checkOutTime ? 'disabled' : ''}>🍽️ ${todayRec?.lunchPhoto ? 'Lunch Done' : 'Lunch'}</button>
+            <button class="btn btn-danger" onclick="openCamera('checkout')" ${!todayRec?.checkInTime || todayRec?.checkOutTime ? 'disabled' : ''}>🚪 ${todayRec?.checkOutTime ? 'Checked Out' : 'Check Out'}</button>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">📅 ${now.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span>
+                <div><button class="btn btn-sm" onclick="changeMonth(-1)">◀</button> <button class="btn btn-sm" onclick="changeMonth(1)">▶</button></div>
             </div>
-            
-            <div class="card">
-                <div class="card-header"><span class="card-title">Today's Status</span></div>
-                ${todayRec?.checkInTime ? `
-                    <p style="font-size:14px;margin-bottom:8px;">✅ Check-in: <strong>${todayRec.checkInTime}</strong></p>
-                    ${todayRec.checkOutTime ? `
-                        <p style="font-size:14px;margin-bottom:8px;">🚪 Check-out: <strong>${todayRec.checkOutTime}</strong></p>
-                        <p style="font-size:14px;">⏰ Hours: <strong>${todayHours.toFixed(1)}h</strong> ${todayHours>9?`| 🔥 OT: <strong style="color:var(--danger)">${(todayHours-9).toFixed(1)}h</strong>`:''}</p>
-                    ` : '<p style="color:var(--warning);font-size:14px;">Still working...</p>'}
-                ` : '<p style="color:var(--text-muted)">Not checked in yet</p>'}
+            <div class="cal-grid">
+                <div class="cal-week">Sun</div><div class="cal-week">Mon</div><div class="cal-week">Tue</div><div class="cal-week">Wed</div><div class="cal-week">Thu</div><div class="cal-week">Fri</div><div class="cal-week">Sat</div>
+                ${genCalendar(records)}
             </div>
-            
-            ${!todayRec?.checkInTime ? `<button class="btn btn-success btn-block" style="margin-bottom:10px;" onclick="checkIn()">📸 Check In Now</button>` : ''}
-            ${todayRec?.checkInTime && !todayRec?.checkOutTime ? `<button class="btn btn-danger btn-block" style="margin-bottom:10px;" onclick="checkOut()">🚪 Check Out</button>` : ''}
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">📅 ${now.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span>
-                    <div style="display:flex;gap:8px;">
-                        <button class="btn btn-sm" onclick="changeMonth(-1)">◀</button>
-                        <button class="btn btn-sm" onclick="changeMonth(1)">▶</button>
-                    </div>
-                </div>
-                <div class="calendar-grid">
-                    <div class="cal-weekday">Sun</div><div class="cal-weekday">Mon</div><div class="cal-weekday">Tue</div><div class="cal-weekday">Wed</div><div class="cal-weekday">Thu</div><div class="cal-weekday">Fri</div><div class="cal-weekday">Sat</div>
-                    ${genCalendar(records)}
-                </div>
-                <div style="margin-top:15px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;">
-                    <span>🟢 P = Present (9h+)</span>
-                    <span>🔴 A = Absent</span>
-                    <span>🟡 P:A = First Half</span>
-                    <span>🟠 A:P = Second Half</span>
-                    <span>🔵 L = Leave</span>
-                </div>
+            <div style="margin-top:15px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text-secondary);">
+                <span>🟢 P=Present</span><span>🔴 A=Absent</span><span>🟡 P:A=First Half</span><span>🟠 A:P=Second Half</span><span>🔵 L=Leave</span>
             </div>
-        `;
-    } catch(err) { showToast('Error: ' + err.message); }
+        </div>`;
+    setInterval(() => { const el = document.getElementById('liveTime'); if (el) el.textContent = new Date().toLocaleTimeString(); }, 1000);
+    } catch (e) { renderError(e, 'showEmpDashboard'); }
+
 }
 
 function genCalendar(records) {
-    const year = selectedMonth.getFullYear();
-    const month = selectedMonth.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const days = new Date(year, month+1, 0).getDate();
-    const today = new Date();
+    const y = selectedMonth.getFullYear(), m = selectedMonth.getMonth();
+    const firstDay = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), today = new Date();
     let html = '';
-    for (let i=0;i<firstDay;i++) html += '<div></div>';
-    for (let d=1;d<=days;d++) {
-        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const rec = records.find(r => r.date === dateStr);
-        const isToday = today.getDate()===d && today.getMonth()===month && today.getFullYear()===year;
+    for (let i = 0; i < firstDay; i++) html += '<div></div>';
+    for (let d = 1; d <= days; d++) {
+        const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const rec = records.find(r => r.date === ds);
+        const isToday = today.getDate() === d && today.getMonth() === m && today.getFullYear() === y;
         let cls = 'cal-future', txt = d;
         if (rec) {
             const h = calcHours(rec.checkInTime, rec.checkOutTime);
-            if (rec.status==='leave') { cls='cal-leave'; txt='L'; }
+            if (rec.status === 'leave') { cls = 'cal-leave'; txt = 'L'; }
             else if (rec.checkInTime && rec.checkOutTime) {
-                if (h>=8.5) { cls='cal-present'; txt='P'; }
-                else if (h>=4.5) { cls='cal-half'; txt = parseInt(rec.checkInTime.split(':')[0])<12 ? 'P:A' : 'A:P'; }
-                else { cls='cal-absent'; txt='A'; }
-            } else if (rec.checkInTime) { cls='cal-half'; txt='P:A'; }
-            else { cls='cal-absent'; txt='A'; }
-        } else if (new Date(dateStr) > today) { cls='cal-future'; }
-        else { cls='cal-absent'; txt='A'; }
-        html += `<div class="cal-day ${cls} ${isToday?'cal-today':''}">${txt}</div>`;
+                if (h >= 8.5) { cls = 'cal-present'; txt = 'P'; }
+                else if (h >= 4.5) { cls = 'cal-half'; txt = parseInt(rec.checkInTime.split(':')[0]) < 12 ? 'P:A' : 'A:P'; }
+                else { cls = 'cal-absent'; txt = 'A'; }
+            } else if (rec.checkInTime) { cls = 'cal-half'; txt = 'P:A'; }
+            else { cls = 'cal-absent'; txt = 'A'; }
+        } else if (new Date(ds) > today) { cls = 'cal-future'; }
+        else { cls = 'cal-absent'; txt = 'A'; }
+        html += `<div class="cal-day ${cls} ${isToday ? 'cal-today' : ''}">${txt}</div>`;
     }
     return html;
 }
 
-function changeMonth(delta) {
-    selectedMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth()+delta, 1);
-    showEmpDashboard();
+function changeMonth(d) { selectedMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + d, 1); showEmpDashboard(); }
+
+// ==================== OWNER DASHBOARD ====================
+async function showOwnerDashboard() {
+    try {
+        setTitle('Owner Dashboard');
+    const main = document.getElementById('mainContent'), today = new Date().toISOString().split('T')[0];
+    const empSnap = await db.collection('employees').get();
+    const allStaff = []; empSnap.forEach(d => allStaff.push({ id: d.id, ...d.data() }));
+    const attSnap = await db.collection('attendance').where('date', '==', today).get();
+    const attMap = {}; attSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
+    const hrAttSnap = await db.collection('hrAttendance').where('date', '==', today).get();
+    hrAttSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
+    const present = allStaff.filter(s => attMap[s.id]?.checkInTime).length;
+    const absent = allStaff.length - present;
+    
+    main.innerHTML = `
+        <div class="hero"><div class="hero-title">👑 Owner Dashboard</div><div class="hero-sub">Complete Team Overview</div></div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${allStaff.length}</div><div class="stat-label">Total Staff</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" style="color:#10b981;">${present}</div><div class="stat-label">Present</div></div>
+            <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-value" style="color:#ef4444;">${absent}</div><div class="stat-label">Absent</div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">📋 All Staff</span></div>
+            <div class="table-wrap"><table>
+                <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Check-in</th><th>Hours</th><th>Action</th></tr></thead>
+                <tbody>
+                ${allStaff.map(s => {
+                    const att = attMap[s.id];
+                    return `<tr style="cursor:pointer;" onclick="showEmpDetail('${s.id}')">
+                        <td><strong>${s.name}</strong></td>
+                        <td><span class="badge ${s.role === 'hr' ? 'badge-emergency' : 'badge-present'}">${s.role}</span></td>
+                        <td><span class="badge ${att?.checkInTime ? 'badge-present' : 'badge-absent'}">${att?.checkInTime ? '✅ Present' : '❌ Absent'}</span></td>
+                        <td>${att?.checkInTime || '-'}</td>
+                        <td>${calcHours(att?.checkInTime, att?.checkOutTime).toFixed(1)}h</td>
+                        <td><button class="btn btn-sm btn-info" onclick="event.stopPropagation();callEmp('${s.phone}')">📞</button></td>
+                    </tr>`;
+                }).join('')}
+                </tbody>
+            </table></div>
+        </div>`;
+    } catch (e) { renderError(e, 'showOwnerDashboard'); }
+
 }
 
-async function checkIn() {
-    document.getElementById('photoInput').click();
-    document.getElementById('photoInput').onchange = async function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        showToast('📸 Uploading...');
-        const reader = new FileReader();
-        reader.onload = async function(ev) {
-            const photoData = ev.target.result;
-            try {
-                const base64 = photoData.split(',')[1];
-                await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ photo: base64, employeeId: currentUser.id, employeeName: currentUser.name, photoType:'checkin', attendanceDate: new Date().toISOString().split('T')[0], mimeType:'image/jpeg' }) });
-            } catch(err) {}
-            await db.collection('attendance').add({
-                employeeId: currentUser.id, employeeName: currentUser.name,
-                date: new Date().toISOString().split('T')[0],
-                checkInTime: new Date().toLocaleTimeString(),
-                checkInPhoto: photoData, status: 'present',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            showToast('✅ Checked in!');
-            showEmpDashboard();
-        };
-        reader.readAsDataURL(file);
-    };
+async function showEmpDetail(id) {
+    try {
+        setTitle('Employee Detail');
+    const main = document.getElementById('mainContent');
+    const empDoc = await db.collection('employees').doc(id).get();
+    const emp = empDoc.data();
+    const now = new Date(), monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const attSnap = await db.collection('attendance').where('employeeId', '==', id).where('date', '>=', monthStart).get();
+    const records = []; attSnap.forEach(d => records.push(d.data()));
+    const present = records.filter(r => calcHours(r.checkInTime, r.checkOutTime) >= 8.5).length;
+    const late = records.filter(r => r.isLate).length;
+    const totalH = records.reduce((s, r) => s + calcHours(r.checkInTime, r.checkOutTime), 0);
+    
+    main.innerHTML = `
+        <div class="card"><div class="card-header"><span class="card-title">👤 ${emp.name}</span><button class="btn btn-sm btn-info" onclick="showOwnerDashboard()">← Back</button></div>
+            <p>Role: ${emp.role} | Phone: ${emp.phone || 'N/A'} | Salary: ₹${emp.salary} (${emp.salaryType || 'daily'})</p>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px;">
+                <div style="text-align:center;padding:15px;background:var(--bg);border-radius:10px;"><div style="font-size:24px;font-weight:800;color:#10b981;">${present}</div><div style="font-size:12px;">Present</div></div>
+                <div style="text-align:center;padding:15px;background:var(--bg);border-radius:10px;"><div style="font-size:24px;font-weight:800;color:#ef4444;">${late}</div><div style="font-size:12px;">Late</div></div>
+                <div style="text-align:center;padding:15px;background:var(--bg);border-radius:10px;"><div style="font-size:24px;font-weight:800;color:#3b82f6;">${totalH.toFixed(1)}h</div><div style="font-size:12px;">Hours</div></div>
+            </div>
+        </div>
+        <div class="card"><div class="card-header"><span class="card-title">📋 Attendance Log</span></div>
+            <div class="table-wrap"><table>
+                <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Hours</th><th>Status</th></tr></thead>
+                <tbody>${records.map(r => `<tr><td>${r.date}</td><td>${r.checkInTime || '-'}${r.isLate ? ' ⚠️' : ''}</td><td>${r.checkOutTime || '-'}</td><td>${calcHours(r.checkInTime, r.checkOutTime).toFixed(1)}h</td><td>${r.checkInTime && r.checkOutTime ? '✅' : r.checkInTime ? '⏳' : '❌'}</td></tr>`).join('')}</tbody>
+            </table></div>
+        </div>`;
+    } catch (e) { renderError(e, 'showEmpDetail'); }
+
 }
 
-async function checkOut() {
-    const today = new Date().toISOString().split('T')[0];
-    const snap = await db.collection('attendance').where('employeeId','==',currentUser.id).where('date','==',today).get();
-    if (!snap.empty) {
-        await snap.docs[0].ref.update({ checkOutTime: new Date().toLocaleTimeString() });
-        showToast('✅ Checked out!');
-        showEmpDashboard();
+// ==================== HR FUNCTIONS ====================
+async function showHRDashboard() {
+    try {
+        setTitle('HR Dashboard');
+    const main = document.getElementById('mainContent'), today = new Date().toISOString().split('T')[0];
+    const hrSnap = await db.collection('hrAttendance').where('employeeId', '==', currentUser.id).where('date', '==', today).get();
+    let hrToday = null; hrSnap.forEach(d => hrToday = d.data());
+    const empSnap = await db.collection('employees').get();
+    const employees = []; empSnap.forEach(d => { const e = d.data(); if (e.role === 'employee') employees.push({ id: d.id, ...e }); });
+    const attSnap = await db.collection('attendance').where('date', '==', today).get();
+    const attMap = {}; attSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
+    const present = employees.filter(e => attMap[e.id]?.checkInTime).length;
+    
+    main.innerHTML = `
+        <div class="card" style="background:linear-gradient(135deg, var(--primary-dark), var(--primary));border:none;color:#fff;">
+            <div class="card-header"><span class="card-title" style="color:#fff;">👤 My Attendance (HR)</span></div>
+            ${hrToday?.checkInTime ? `<p>✅ Check-in: ${hrToday.checkInTime}</p>${hrToday.checkOutTime ? `<p>🚪 Check-out: ${hrToday.checkOutTime}</p>` : '<p style="color:#feca57;">Working...</p>'}` : '<p>Not checked in</p>'}
+            ${!hrToday?.checkInTime ? `<button class="btn btn-success" onclick="hrCheckIn()">📸 Check In</button>` : !hrToday?.checkOutTime ? `<button class="btn btn-danger" onclick="hrCheckOut()">🚪 Check Out</button>` : ''}
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${employees.length}</div><div class="stat-label">Employees</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" style="color:#10b981;">${present}</div><div class="stat-label">Present</div></div>
+            <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-value" style="color:#ef4444;">${employees.length - present}</div><div class="stat-label">Absent</div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">⚡ Quick Actions</span></div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+                <button class="btn btn-info" onclick="showTodayAttendance()">✅ Today's Attendance</button>
+                <button class="btn btn-warning" onclick="showPhotoAudit()">📸 Photo Audit</button>
+                <button class="btn btn-success" onclick="showMonthlyReport()">📅 Monthly Report</button>
+                <button class="btn btn-danger" onclick="showLeaveRequests()">🏖️ Leave Requests</button>
+            </div>
+        </div>
+        ${employees.length === 0 ? `<div class="card"><p style="color:var(--text-secondary);text-align:center;">No employees added yet. Go to <strong>Manage Employees</strong> to add your first employee.</p></div>` : ''}`;
+    } catch (e) { renderError(e, 'showHRDashboard'); }
+
+}
+
+async function hrCheckIn() {
+    const today = new Date().toISOString().split('T')[0], time = new Date().toLocaleTimeString();
+    await db.collection('hrAttendance').add({ employeeId: currentUser.id, employeeName: currentUser.name, date: today, checkInTime: time, status: 'present', isLate: isLate(time), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    showToast('✅ HR Check-in recorded!'); showHRDashboard();
+}
+
+async function hrCheckOut() {
+    const today = new Date().toISOString().split('T')[0], time = new Date().toLocaleTimeString();
+    const snap = await db.collection('hrAttendance').where('employeeId', '==', currentUser.id).where('date', '==', today).get();
+    if (!snap.empty) { await snap.docs[0].ref.update({ checkOutTime: time, isEarlyLogout: isEarlyLogout(time) }); }
+    showToast('✅ HR Check-out recorded!'); showHRDashboard();
+}
+
+async function showHRReview() {
+    try {
+        setTitle('HR Attendance');
+    const main = document.getElementById('mainContent');
+    const now = new Date(), monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const hrSnap = await db.collection('employees').where('role', '==', 'hr').get();
+    const hrEmployees = []; hrSnap.forEach(d => hrEmployees.push({ id: d.id, ...d.data() }));
+    const attSnap = await db.collection('hrAttendance').where('date', '>=', monthStart).get();
+    const records = []; attSnap.forEach(d => records.push(d.data()));
+    
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">👤 HR Attendance Review</span></div></div>` +
+        hrEmployees.map(hr => {
+            const recs = records.filter(r => r.employeeId === hr.id);
+            const present = recs.filter(r => r.checkInTime && r.checkOutTime).length;
+            const late = recs.filter(r => r.isLate).length;
+            const totalH = recs.reduce((s, r) => s + calcHours(r.checkInTime, r.checkOutTime), 0);
+            const today = now.toISOString().split('T')[0];
+            const todayRec = recs.find(r => r.date === today);
+            return `<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:15px;"><h3>${hr.name}</h3><span class="badge ${todayRec?.checkInTime ? 'badge-present' : 'badge-absent'}">${todayRec?.checkInTime ? '✅ Present' : '❌ Absent'}</span></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:20px;font-weight:800;color:#10b981;">${present}</div><div style="font-size:11px;">Present</div></div><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:20px;font-weight:800;color:#ef4444;">${late}</div><div style="font-size:11px;">Late</div></div><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:20px;font-weight:800;">${totalH.toFixed(1)}h</div><div style="font-size:11px;">Hours</div></div></div></div>`;
+        }).join('') +
+        `<div class="card"><div class="card-header"><span class="card-title">📋 HR Daily Log</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Name</th><th>In</th><th>Out</th><th>Hours</th></tr></thead><tbody>${records.sort((a, b) => b.date.localeCompare(a.date)).map(r => `<tr><td>${r.date}</td><td><strong>${r.employeeName}</strong></td><td>${r.checkInTime || '-'}</td><td>${r.checkOutTime || '-'}</td><td>${calcHours(r.checkInTime, r.checkOutTime).toFixed(1)}h</td></tr>`).join('')}</tbody></table></div></div>`;
+    } catch (e) { renderError(e, 'showHRReview'); }
+
+}
+
+// ==================== TOP PERFORMERS ====================
+async function showTopPerformers() {
+    try {
+        setTitle('Top Performers');
+    const main = document.getElementById('mainContent');
+    const now = new Date(), monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const empSnap = await db.collection('employees').get();
+    const employees = []; empSnap.forEach(d => { const e = d.data(); if (e.role === 'employee') employees.push({ id: d.id, ...e }); });
+    const attSnap = await db.collection('attendance').where('date', '>=', monthStart).get();
+    const attMap = {}; attSnap.forEach(d => { const data = d.data(); if (!attMap[data.employeeId]) attMap[data.employeeId] = []; attMap[data.employeeId].push(data); });
+    const performers = employees.map(emp => {
+        const recs = attMap[emp.id] || [];
+        const present = recs.filter(r => calcHours(r.checkInTime, r.checkOutTime) >= 8.5).length;
+        const late = recs.filter(r => r.isLate).length;
+        const early = recs.filter(r => r.isEarlyLogout).length;
+        const longB = recs.filter(r => (r.breakDuration || 0) > 1).length;
+        const ot = recs.reduce((s, r) => { const h = calcHours(r.checkInTime, r.checkOutTime); return s + (h > 9 ? h - 9 : 0); }, 0);
+        let score = 100 - (late * 5) - (early * 5) - (longB * 3);
+        score = Math.max(score, 0);
+        return { ...emp, present, late, early, longB, ot, score };
+    }).sort((a, b) => b.score - a.score);
+    
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">🏆 Top Performers - ${now.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span></div></div>` +
+        performers.map((emp, i) => `<div class="card" style="${i === 0 ? 'border:2px solid #f59e0b;' : ''}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><div style="display:flex;align-items:center;gap:15px;"><div style="width:50px;height:50px;border-radius:50%;background:${i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#b45309' : '#e2e8f0'};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:white;">${i + 1}</div><div><h3>${emp.name}</h3><span class="badge badge-present">Score: ${emp.score}/100</span></div></div>${i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : ''}</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;"><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:18px;font-weight:800;color:#10b981;">${emp.present}</div><div style="font-size:10px;">Present</div></div><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:18px;font-weight:800;color:#ef4444;">${emp.late}</div><div style="font-size:10px;">Late</div></div><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:18px;font-weight:800;color:#f59e0b;">${emp.early}</div><div style="font-size:10px;">Early</div></div><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:18px;font-weight:800;color:#3b82f6;">${emp.ot.toFixed(1)}h</div><div style="font-size:10px;">OT</div></div><div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:18px;font-weight:800;color:#8b5cf6;">${emp.longB}</div><div style="font-size:10px;">Break</div></div></div></div>`).join('');
+    } catch (e) { renderError(e, 'showTopPerformers'); }
+
+}
+
+// ==================== SALARY REPORT ====================
+async function showSalaryReport(period) {
+    try {
+        setTitle('Salary Report');
+    const main = document.getElementById('mainContent');
+    const now = new Date(); let startDate;
+    if (period === 'daily') startDate = now.toISOString().split('T')[0];
+    else if (period === 'weekly') startDate = new Date(now.getTime() - 7 * 86400000).toISOString().split('T')[0];
+    else if (period === 'monthly') startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    else startDate = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+    
+    const empSnap = await db.collection('employees').get();
+    const employees = []; empSnap.forEach(d => { const e = d.data(); if (e.role !== 'owner') employees.push({ id: d.id, ...e }); });
+    const salaryData = [];
+    for (const emp of employees) {
+        const attSnap = await db.collection('attendance').where('employeeId', '==', emp.id).where('date', '>=', startDate).get();
+        const recs = []; attSnap.forEach(d => recs.push(d.data()));
+        const present = recs.filter(r => calcHours(r.checkInTime, r.checkOutTime) >= 8.5).length;
+        const half = recs.filter(r => { const h = calcHours(r.checkInTime, r.checkOutTime); return h >= 4.5 && h < 8.5; }).length;
+        const ot = recs.reduce((s, r) => { const h = calcHours(r.checkInTime, r.checkOutTime); return s + (h > 9 ? h - 9 : 0); }, 0);
+        let base, total;
+        if (emp.salaryType === 'daily') { base = present * emp.salary + half * (emp.salary / 2); }
+        else if (emp.salaryType === 'weekly') { base = emp.salary; }
+        else { base = emp.salary; }
+        total = base + ot * (emp.salary / 54);
+        salaryData.push({ ...emp, present, half, ot, base, total });
     }
+    salaryData.sort((a, b) => b.total - a.total);
+    const totalPayroll = salaryData.reduce((s, d) => s + d.total, 0);
+    
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">💰 Salary Report - ${period.toUpperCase()}</span></div></div><div class="stats-grid"><div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value" style="color:#10b981;">₹${totalPayroll.toFixed(2)}</div><div class="stat-label">Total Payroll</div></div><div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${employees.length}</div><div class="stat-label">Staff</div></div></div><div class="card"><div class="table-wrap"><table><thead><tr><th>Employee</th><th>Type</th><th>Present</th><th>Half</th><th>OT</th><th>Base</th><th>Total</th></tr></thead><tbody>${salaryData.map(d => `<tr><td><strong>${d.name}</strong></td><td>${d.salaryType}</td><td>${d.present}</td><td>${d.half}</td><td>${d.ot.toFixed(1)}h</td><td>₹${d.base.toFixed(2)}</td><td><strong>₹${d.total.toFixed(2)}</strong></td></tr>`).join('')}</tbody></table></div></div>`;
+    } catch (e) { renderError(e, 'showSalaryReport'); }
+
 }
+
+// ==================== OTHER FUNCTIONS ====================
+async function showTodayAttendance(dateStr) {
+    try {
+        setTitle("Today's Attendance");
+    const main = document.getElementById('mainContent'), today = new Date().toISOString().split('T')[0];
+    const viewDate = dateStr || today;
+    const empSnap = await db.collection('employees').get();
+    const employees = []; empSnap.forEach(d => { const e = d.data(); if (e.role === 'employee') employees.push({ id: d.id, ...e }); });
+    const attSnap = await db.collection('attendance').where('date', '==', viewDate).get();
+    const attMap = {}; attSnap.forEach(d => { attMap[d.data().employeeId] = d.data(); });
+    const photoCell = (url) => url ? `<img src="${url}" class="photo-thumb" onclick="viewPhoto('${url}')">` : '<span style="color:var(--text-secondary);font-size:11px;">—</span>';
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">✅ Attendance ${viewDate === today ? '(Today)' : ''}</span><input type="date" class="form-input" style="width:auto;padding:8px 10px;" value="${viewDate}" max="${today}" onchange="showTodayAttendance(this.value)"></div><div class="table-wrap"><table><thead><tr><th>Employee</th><th>Status</th><th>In</th><th>Out</th><th>Check-in</th><th>Lunch</th><th>Check-out</th><th>Hours</th></tr></thead><tbody>${employees.map(e => { const att = attMap[e.id]; return `<tr><td><strong>${e.name}</strong></td><td><span class="badge ${att?.checkInTime ? 'badge-present' : 'badge-absent'}">${att?.checkInTime ? '✅ Present' : '❌ Absent'}</span></td><td>${att?.checkInTime || '-'}</td><td>${att?.checkOutTime || '-'}</td><td>${photoCell(att?.checkInPhoto)}</td><td>${photoCell(att?.lunchPhoto)}</td><td>${photoCell(att?.checkOutPhoto)}</td><td>${calcHours(att?.checkInTime, att?.checkOutTime).toFixed(1)}h</td></tr>`; }).join('')}</tbody></table></div></div>`;
+    } catch (e) { renderError(e, 'showTodayAttendance'); }
+
+}
+
+async function showPhotoAudit(dateStr) {
+    try {
+        setTitle('Photo Audit');
+    const main = document.getElementById('mainContent'), today = new Date().toISOString().split('T')[0];
+    const viewDate = dateStr || today;
+    const snap = await db.collection('attendance').where('date', '==', viewDate).get();
+    const records = []; snap.forEach(d => records.push(d.data()));
+
+    // Build one gallery entry per photo (check-in / lunch / check-out), not just check-in
+    const shots = [];
+    records.forEach(r => {
+        if (r.checkInPhoto) shots.push({ url: r.checkInPhoto, name: r.employeeName, label: 'Check-in', time: r.checkInTime });
+        if (r.lunchPhoto) shots.push({ url: r.lunchPhoto, name: r.employeeName, label: 'Lunch', time: r.lunchTime });
+        if (r.checkOutPhoto) shots.push({ url: r.checkOutPhoto, name: r.employeeName, label: 'Check-out', time: r.checkOutTime });
+    });
+    const missingCheckIn = records.filter(r => r.checkInTime && !r.checkInPhoto);
+    const missingCheckOut = records.filter(r => r.checkOutTime && !r.checkOutPhoto);
+
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">📸 Photo Audit ${viewDate === today ? '(Today)' : ''}</span><input type="date" class="form-input" style="width:auto;padding:8px 10px;" value="${viewDate}" max="${today}" onchange="showPhotoAudit(this.value)"></div><p style="font-size:13px;color:var(--text-secondary);">✅ Photos captured: ${shots.length} &nbsp;|&nbsp; ❌ Missing check-in: ${missingCheckIn.length} &nbsp;|&nbsp; ❌ Missing check-out: ${missingCheckOut.length}</p></div>${(missingCheckIn.length || missingCheckOut.length) ? `<div class="card"><div class="card-header"><span class="card-title">⚠️ Missing Photos</span></div>${missingCheckIn.map(r => `<div style="padding:10px;background:rgba(220,38,38,0.08);border-radius:8px;margin-bottom:8px;"><strong>${r.employeeName}</strong> — missing check-in photo</div>`).join('')}${missingCheckOut.map(r => `<div style="padding:10px;background:rgba(217,119,6,0.08);border-radius:8px;margin-bottom:8px;"><strong>${r.employeeName}</strong> — missing check-out photo</div>`).join('')}</div>` : ''}<div class="card"><div class="card-header"><span class="card-title">📸 Gallery — ${viewDate}</span></div>${shots.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;">${shots.map(s => `<div style="text-align:center;"><img src="${s.url}" style="width:100%;height:120px;object-fit:cover;border-radius:10px;cursor:pointer;" onclick="viewPhoto('${s.url}')"><div style="font-size:12px;font-weight:600;margin-top:4px;">${s.name}</div><div style="font-size:10px;color:var(--text-secondary);">${s.label}${s.time ? ' · ' + s.time : ''}</div></div>`).join('')}</div>` : '<p style="color:var(--text-secondary);">No photos for this date</p>'}</div>`;
+    } catch (e) { renderError(e, 'showPhotoAudit'); }
+
+}
+
+async function showMonthlyReport() {
+    try {
+        setTitle('Monthly Report');
+    const main = document.getElementById('mainContent'), now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const empSnap = await db.collection('employees').get();
+    const employees = []; empSnap.forEach(d => { const e = d.data(); if (e.role === 'employee') employees.push({ id: d.id, ...e }); });
+    const attSnap = await db.collection('attendance').where('date', '>=', monthStart).get();
+    const attMap = {}; attSnap.forEach(d => { const data = d.data(); if (!attMap[data.employeeId]) attMap[data.employeeId] = []; attMap[data.employeeId].push(data); });
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">📅 Monthly Report - ${now.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span></div><div class="table-wrap"><table><thead><tr><th>Employee</th><th>Present</th><th>Half</th><th>Absent</th><th>Hours</th><th>OT</th></tr></thead><tbody>${employees.map(e => { const recs = attMap[e.id] || []; const present = recs.filter(r => calcHours(r.checkInTime, r.checkOutTime) >= 8.5).length; const half = recs.filter(r => { const h = calcHours(r.checkInTime, r.checkOutTime); return h >= 4.5 && h < 8.5; }).length; const absent = recs.filter(r => !r.checkInTime).length; const totalH = recs.reduce((s, r) => s + calcHours(r.checkInTime, r.checkOutTime), 0); const ot = recs.reduce((s, r) => { const h = calcHours(r.checkInTime, r.checkOutTime); return s + (h > 9 ? h - 9 : 0); }, 0); return `<tr><td><strong>${e.name}</strong></td><td><span class="badge badge-present">${present}</span></td><td><span class="badge badge-half">${half}</span></td><td><span class="badge badge-absent">${absent}</span></td><td>${totalH.toFixed(1)}h</td><td>${ot.toFixed(1)}h</td></tr>`; }).join('')}</tbody></table></div></div>`;
+    } catch (e) { renderError(e, 'showMonthlyReport'); }
+
+}
+
+async function showSalaryCalc() {
+    try {
+        setTitle('Salary Calculator');
+    const main = document.getElementById('mainContent');
+    const snap = await db.collection('employees').get();
+    const employees = []; snap.forEach(d => { const e = d.data(); if (e.role === 'employee') employees.push({ id: d.id, ...e }); });
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">💰 Salary Calculator</span></div><div class="form-group"><label class="form-label">Employee</label><select class="form-input" id="salEmp" onchange="calcSalary()"><option value="">Select...</option>${employees.map(e => `<option value="${e.id}" data-salary="${e.salary}" data-name="${e.name}">${e.name} (₹${e.salary}/day)</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Period</label><select class="form-input" id="salPeriod" onchange="calcSalary()"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div></div><div class="card" id="salResult" style="display:none;"><div id="salDetails"></div></div>`;
+    } catch (e) { renderError(e, 'showSalaryCalc'); }
+
+}
+
+async function calcSalary() {
+    const empSel = document.getElementById('salEmp'), period = document.getElementById('salPeriod').value;
+    if (!empSel.value) return;
+    const empId = empSel.value, empName = empSel.options[empSel.selectedIndex].dataset.name, dailyRate = parseInt(empSel.options[empSel.selectedIndex].dataset.salary);
+    const now = new Date(); let startDate;
+    if (period === 'daily') startDate = new Date(now).toISOString().split('T')[0];
+    else if (period === 'weekly') startDate = new Date(now.getTime() - 7 * 86400000).toISOString().split('T')[0];
+    else startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const snap = await db.collection('attendance').where('employeeId', '==', empId).where('date', '>=', startDate).get();
+    const recs = []; snap.forEach(d => recs.push(d.data()));
+    const presentDays = recs.filter(r => calcHours(r.checkInTime, r.checkOutTime) >= 8.5).length;
+    const halfDays = recs.filter(r => { const h = calcHours(r.checkInTime, r.checkOutTime); return h >= 4.5 && h < 8.5; }).length;
+    const otHours = recs.reduce((s, r) => { const h = calcHours(r.checkInTime, r.checkOutTime); return s + (h > 9 ? h - 9 : 0); }, 0);
+    const total = presentDays * dailyRate + halfDays * (dailyRate / 2) + otHours * (dailyRate / 9);
+    document.getElementById('salResult').style.display = 'block';
+    document.getElementById('salDetails').innerHTML = `<h3>${empName}</h3><p>Present: ${presentDays} × ₹${dailyRate} = ₹${presentDays * dailyRate}</p><p>Half: ${halfDays} × ₹${dailyRate / 2} = ₹${halfDays * (dailyRate / 2)}</p><p>OT: ${otHours.toFixed(1)}h = ₹${(otHours * (dailyRate / 9)).toFixed(2)}</p><hr><h2 style="color:#10b981;">Total: ₹${total.toFixed(2)}</h2>`;
+}
+
+async function showLeaveRequests() {
+    try {
+        setTitle('Leave Requests');
+    const main = document.getElementById('mainContent');
+    const snap = await db.collection('leaveRequests').orderBy('timestamp', 'desc').get();
+    const reqs = []; snap.forEach(d => reqs.push({ id: d.id, ...d.data() }));
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">🏖️ Leave Requests</span></div>${reqs.length ? reqs.map(r => `<div style="padding:15px;border-bottom:1px solid var(--border);"><strong>${r.employeeName}</strong>${r.isEmergency ? '<span class="badge badge-emergency" style="margin-left:8px;">EMERGENCY</span>' : ''}<p style="font-size:13px;color:var(--text-secondary);margin-top:5px;">${r.leaveType} - ${r.reason}</p><p style="font-size:12px;">Date: ${r.leaveDate}</p><span class="badge ${r.status === 'approved' ? 'badge-present' : r.status === 'rejected' ? 'badge-absent' : 'badge-pending'}">${r.status.toUpperCase()}</span>${r.status === 'pending' ? `<div style="margin-top:8px;display:flex;gap:8px;"><button class="btn btn-sm btn-success" onclick="approveLeave('${r.id}')">✅</button><button class="btn btn-sm btn-danger" onclick="rejectLeave('${r.id}')">❌</button></div>` : ''}</div>`).join('') : '<p style="color:var(--text-secondary);">No requests</p>'}</div>`;
+    } catch (e) { renderError(e, 'showLeaveRequests'); }
+
+}
+
+async function approveLeave(id) { await db.collection('leaveRequests').doc(id).update({ status: 'approved' }); showToast('✅ Approved'); showLeaveRequests(); }
+async function rejectLeave(id) { await db.collection('leaveRequests').doc(id).update({ status: 'rejected' }); showToast('❌ Rejected'); showLeaveRequests(); }
+
+async function showManageEmployees() {
+    try {
+        setTitle('Manage Employees');
+    const main = document.getElementById('mainContent');
+    const snap = await db.collection('employees').get();
+    const emps = []; snap.forEach(d => emps.push({ id: d.id, ...d.data() }));
+    main.innerHTML = `<div class="card"><div class="card-header"><span class="card-title">👥 Manage Employees (${emps.length})</span></div><button class="btn btn-success btn-block" style="margin-bottom:15px;" onclick="showAddEmpForm()">➕ Add Employee</button><div class="table-wrap"><table><thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Salary</th><th>Action</th></tr></thead><tbody>${emps.map(e => `<tr><td><strong>${e.name}</strong></td><td>${e.username}</td><td>${e.phone || '-'}</td><td><span class="badge ${e.role === 'hr' ? 'badge-emergency' : 'badge-present'}">${e.role}</span></td><td>₹${e.salary}</td><td>${e.role !== 'hr' ? `<button class="btn btn-sm btn-danger" onclick="deleteEmp('${e.id}','${e.name}')">🗑️</button>` : '-'}</td></tr>`).join('')}</tbody></table></div></div>`;
+    } catch (e) { renderError(e, 'showManageEmployees'); }
+
+}
+
+function showAddEmpForm() {
+    document.getElementById('mainContent').innerHTML = `<div class="card"><div class="card-header"><span class="card-title">➕ Add Employee</span></div><div class="form-group"><label class="form-label">Name</label><input class="form-input" id="newName"></div><div class="form-group"><label class="form-label">Username</label><input class="form-input" id="newUsername"></div><div class="form-group"><label class="form-label">Password</label><input class="form-input" id="newPassword"></div><div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="newPhone"></div><div class="form-group"><label class="form-label">Salary Type</label><select class="form-input" id="newSalaryType"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div><div class="form-group"><label class="form-label">Salary</label><input type="number" class="form-input" id="newSalary"></div><button class="btn btn-success btn-block" onclick="addEmp()">Add</button><button class="btn btn-danger btn-block" style="margin-top:10px;" onclick="showManageEmployees()">Cancel</button></div>`;
+}
+
+async function addEmp() {
+    const name = document.getElementById('newName').value, username = document.getElementById('newUsername').value, password = document.getElementById('newPassword').value, phone = document.getElementById('newPhone').value, salaryType = document.getElementById('newSalaryType').value, salary = parseInt(document.getElementById('newSalary').value);
+    if (!name || !username || !password || !salary) { showToast('Fill all fields'); return; }
+    const id = 'emp' + Date.now();
+    await db.collection('employees').doc(id).set({ id, name, username, password, phone, salaryType, salary, role: 'employee' });
+    showToast('✅ Added!'); showManageEmployees();
+}
+
+async function deleteEmp(id, name) { if (confirm(`Delete ${name}?`)) { await db.collection('employees').doc(id).delete(); showToast('✅ Deleted'); showManageEmployees(); } }
+
+function showMyAlerts() { document.getElementById('mainContent').innerHTML = '<div class="card"><div class="card-header"><span class="card-title">🔔 My Alerts</span></div><p style="color:var(--text-secondary);">No alerts! 🎉</p></div>'; }
+
+function showHelp() { document.getElementById('mainContent').innerHTML = '<div class="card"><div class="card-header"><span class="card-title">📖 Guidelines</span></div><p>• Full Day: 9 hours (4.5+4.5)</p><p>• Half Day: 4.5 hours</p><p>• Late after 10:30 AM</p><p>• Early logout before 7:00 PM</p><p>• Max 5 leaves/month</p><p>• Lunch break: 1 hour</p><p>• Sunday: 4.5 hours minimum</p></div>'; }
 
 function showLeaveForm() {
-    document.getElementById('mainContent').innerHTML = `
-        <div class="card">
-            <div class="card-header"><span class="card-title">🏖️ Apply for Leave</span></div>
-            <div class="form-group"><label class="form-label">Leave Type</label>
-                <select class="form-input" id="leaveType" style="padding-left:15px;">
-                    <option value="">Select type</option>
-                    <option value="planned">Planned Leave</option>
-                    <option value="emergency">Emergency Leave</option>
-                    <option value="sick">Sick Leave</option>
-                    <option value="family">Family Event</option>
-                </select>
-            </div>
-            <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="leaveDate" style="padding-left:15px;"></div>
-            <div class="form-group"><label class="form-label">Reason</label><textarea class="form-input" id="leaveReason" rows="4" style="padding-left:15px;"></textarea></div>
-            <button class="btn btn-warning btn-block" onclick="submitLeave()">Submit Request</button>
-        </div>
-    `;
+    document.getElementById('mainContent').innerHTML = '<div class="card"><div class="card-header"><span class="card-title">🏖️ Leave Request</span></div><div class="form-group"><label class="form-label">Type</label><select class="form-input" id="leaveType"><option value="planned">Planned</option><option value="emergency">Emergency</option><option value="sick">Sick</option><option value="family">Family</option></select></div><div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="leaveDate"></div><div class="form-group"><label class="form-label">Reason</label><textarea class="form-input" id="leaveReason" rows="4"></textarea></div><button class="btn btn-warning btn-block" onclick="submitLeave()">Submit</button></div>';
 }
 
 async function submitLeave() {
-    const type = document.getElementById('leaveType').value;
-    const date = document.getElementById('leaveDate').value;
-    const reason = document.getElementById('leaveReason').value;
+    const type = document.getElementById('leaveType').value, date = document.getElementById('leaveDate').value, reason = document.getElementById('leaveReason').value;
     if (!type || !date || !reason) { showToast('Fill all fields'); return; }
-    await db.collection('leaveRequests').add({
-        employeeId: currentUser.id, employeeName: currentUser.name,
-        leaveType: type, leaveDate: date, reason: reason,
-        status: 'pending', isEmergency: type==='emergency',
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ Leave submitted!');
-    showPage('dashboard');
+    await db.collection('leaveRequests').add({ employeeId: currentUser.id, employeeName: currentUser.name, leaveType: type, leaveDate: date, reason: reason, status: 'pending', isEmergency: type === 'emergency', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection('notifications').add({ type: type === 'emergency' ? 'emergency_leave' : 'leave_request', employeeId: currentUser.id, employeeName: currentUser.name, message: currentUser.name + ' requested ' + type + ' leave', date: new Date().toISOString().split('T')[0], status: 'unread', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    showToast('✅ Submitted!'); showEmpDashboard();
 }
 
-function showOutsideForm() {
-    document.getElementById('mainContent').innerHTML = `
-        <div class="card">
-            <div class="card-header"><span class="card-title">📍 Outside Work</span></div>
-            <div class="form-group"><label class="form-label">Reason</label>
-                <select class="form-input" id="outReason" style="padding-left:15px;">
-                    <option value="">Select reason</option>
-                    <option value="client">Client Visit</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="purchase">Purchase Materials</option>
-                    <option value="bank">Bank Work</option>
-                </select>
-            </div>
-            <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="outDesc" rows="3" style="padding-left:15px;"></textarea></div>
-            <button class="btn btn-info btn-block" onclick="submitOutside()">Submit</button>
-        </div>
-    `;
+function showNotifications() {
+    db.collection('notifications').orderBy('timestamp', 'desc').limit(20).get().then(snap => {
+        const notifs = []; snap.forEach(d => notifs.push(d.data()));
+        document.getElementById('mainContent').innerHTML = '<div class="card"><div class="card-header"><span class="card-title">🔔 Notifications</span></div>' + (notifs.length ? notifs.map(n => '<div style="padding:12px;border-bottom:1px solid var(--border);"><strong>' + n.employeeName + '</strong><p style="font-size:13px;color:var(--text-secondary);">' + n.message + '</p></div>').join('') : '<p style="color:var(--text-secondary);">No notifications</p>') + '</div>';
+    }).catch(() => { document.getElementById('mainContent').innerHTML = '<div class="card"><div class="card-header"><span class="card-title">🔔 Notifications</span></div><p style="color:var(--text-secondary);">No notifications</p></div>'; });
 }
 
-async function submitOutside() {
-    const reason = document.getElementById('outReason').value;
-    const desc = document.getElementById('outDesc').value;
-    if (!reason) { showToast('Select reason'); return; }
-    await db.collection('outsideWork').add({
-        employeeId: currentUser.id, employeeName: currentUser.name,
-        reason: reason, description: desc,
-        startTime: new Date().toLocaleTimeString(),
-        date: new Date().toISOString().split('T')[0],
-        phone: currentUser.phone,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ Outside work logged!');
-    showPage('dashboard');
-}
+console.log('✅ AttendPro Complete System Loaded Successfully!');
 </script>
-    <!-- Break Tracking Modal -->
-<div class="break-modal" id="breakModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;">
-    <div style="background:white;border-radius:20px;padding:30px;max-width:400px;width:90%;text-align:center;">
-        <div style="font-size:60px;margin-bottom:15px;">☕</div>
-        <h3 style="margin-bottom:10px;" id="breakModalTitle">Break Time</h3>
-        <p style="color:#666;margin-bottom:20px;" id="breakModalText">Start your break?</p>
-        <div style="display:flex;gap:10px;">
-            <button onclick="confirmBreak()" style="flex:1;padding:12px;background:#f59e0b;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;">Confirm</button>
-            <button onclick="closeBreakModal()" style="flex:1;padding:12px;background:#e2e8f0;color:#333;border:none;border-radius:10px;font-weight:600;cursor:pointer;">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<script>
-// ==================== BREAK TRACKING SYSTEM ====================
-
-let breakModalAction = null;
-
-// Show break modal
-function showBreakModal(action) {
-    breakModalAction = action;
-    const modal = document.getElementById('breakModal');
-    const title = document.getElementById('breakModalTitle');
-    const text = document.getElementById('breakModalText');
-    
-    if (action === 'start') {
-        title.textContent = 'Start Break';
-        text.textContent = 'Are you sure you want to start your break?';
-    } else {
-        title.textContent = 'End Break';
-        text.textContent = 'Are you sure you want to end your break?';
-    }
-    
-    modal.style.display = 'flex';
-}
-
-// Close break modal
-function closeBreakModal() {
-    document.getElementById('breakModal').style.display = 'none';
-}
-
-// Confirm break action
-async function confirmBreak() {
-    closeBreakModal();
-    if (breakModalAction === 'start') {
-        await startBreak();
-    } else {
-        await endBreak();
-    }
-}
-
-// Start Break
-async function startBreak() {
-    const today = new Date().toISOString().split('T')[0];
-    
-    try {
-        // Find today's attendance record
-        const snap = await db.collection('attendance')
-            .where('employeeId', '==', currentUser.id)
-            .where('date', '==', today)
-            .get();
-        
-        if (snap.empty) {
-            showToast('❌ Please check in first');
-            return;
-        }
-        
-        const breakStartTime = new Date().toLocaleTimeString();
-        
-        // Update attendance with break start
-        await snap.docs[0].ref.update({
-            breakStart: breakStartTime,
-            breakStartTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Log break start
-        await db.collection('breaks').add({
-            employeeId: currentUser.id,
-            employeeName: currentUser.name,
-            date: today,
-            type: 'start',
-            time: breakStartTime,
-            phone: currentUser.phone,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        showToast('☕ Break started at ' + breakStartTime);
-        
-        // Refresh dashboard
-        if (currentUser.role === 'employee') {
-            showEmpDashboard();
-        }
-        
-    } catch (error) {
-        console.error('Break start error:', error);
-        showToast('❌ Error starting break');
-    }
-}
-
-// End Break
-async function endBreak() {
-    const today = new Date().toISOString().split('T')[0];
-    
-    try {
-        // Find today's attendance record
-        const snap = await db.collection('attendance')
-            .where('employeeId', '==', currentUser.id)
-            .where('date', '==', today)
-            .get();
-        
-        if (snap.empty) {
-            showToast('❌ No attendance record found');
-            return;
-        }
-        
-        const data = snap.docs[0].data();
-        
-        if (!data.breakStart) {
-            showToast('❌ No break started');
-            return;
-        }
-        
-        const breakEndTime = new Date().toLocaleTimeString();
-        
-        // Calculate break duration in hours
-        const breakDuration = calcHours(data.breakStart, breakEndTime);
-        
-        // Update attendance with break end
-        await snap.docs[0].ref.update({
-            breakEnd: breakEndTime,
-            breakDuration: breakDuration,
-            breakEndTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Log break end
-        await db.collection('breaks').add({
-            employeeId: currentUser.id,
-            employeeName: currentUser.name,
-            date: today,
-            type: 'end',
-            time: breakEndTime,
-            duration: breakDuration,
-            phone: currentUser.phone,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Notify HR if break exceeds 1 hour (60 minutes)
-        if (breakDuration > 1) {
-            await db.collection('notifications').add({
-                type: 'long_break',
-                employeeId: currentUser.id,
-                employeeName: currentUser.name,
-                message: `${currentUser.name} took ${breakDuration.toFixed(1)} hours break (exceeds 1 hour limit)`,
-                date: today,
-                status: 'unread',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            showToast(`⚠️ Break ended! Duration: ${breakDuration.toFixed(1)} hours (Long break!)`);
-        } else {
-            showToast(`✅ Break ended! Duration: ${breakDuration.toFixed(1)} hours`);
-        }
-        
-        // Refresh dashboard
-        if (currentUser.role === 'employee') {
-            showEmpDashboard();
-        }
-        
-    } catch (error) {
-        console.error('Break end error:', error);
-        showToast('❌ Error ending break');
-    }
-}
-
-// Get break status for employee dashboard
-function getBreakStatus(todayRec) {
-    if (!todayRec) return '';
-    
-    if (todayRec.breakStart && !todayRec.breakEnd) {
-        // Currently on break
-        return `
-            <div style="margin-top:15px;padding:15px;background:#fef3c7;border-radius:10px;text-align:center;">
-                <p style="font-size:16px;font-weight:700;color:#f59e0b;">☕ Currently on Break</p>
-                <p style="font-size:13px;color:#666;margin-top:5px;">Started at: ${todayRec.breakStart}</p>
-                <button class="btn btn-info" style="margin-top:10px;width:100%;" onclick="showBreakModal('end')">🔚 End Break</button>
-            </div>
-        `;
-    } else if (todayRec.breakStart && todayRec.breakEnd) {
-        // Break completed
-        const duration = todayRec.breakDuration || 0;
-        const isLong = duration > 1;
-        
-        return `
-            <div style="margin-top:15px;padding:15px;background:${isLong ? '#fee2e2' : '#d1fae5'};border-radius:10px;">
-                <p style="font-size:14px;font-weight:700;color:${isLong ? '#ef4444' : '#10b981'};">
-                    ${isLong ? '⚠️ Long Break' : '✅ Break Completed'}
-                </p>
-                <p style="font-size:13px;color:#666;margin-top:5px;">Started: ${todayRec.breakStart}</p>
-                <p style="font-size:13px;color:#666;">Ended: ${todayRec.breakEnd}</p>
-                <p style="font-size:14px;font-weight:700;margin-top:5px;color:${isLong ? '#ef4444' : '#10b981'};">
-                    Duration: ${duration.toFixed(2)} hours
-                </p>
-            </div>
-        `;
-    } else {
-        // No break yet
-        return `
-            <button class="btn btn-warning" style="margin-top:15px;width:100%;" onclick="showBreakModal('start')">
-                ☕ Start Break
-            </button>
-        `;
-    }
-}
-
-// HR Break Monitoring Page
-async function showBreaks() {
-    const main = document.getElementById('mainContent');
-    const today = new Date().toISOString().split('T')[0];
-    
-    try {
-        // Get current break status
-        const attSnap = await db.collection('attendance')
-            .where('date', '==', today)
-            .get();
-        
-        const currentBreaks = [];
-        const completedBreaks = [];
-        
-        attSnap.forEach(d => {
-            const data = d.data();
-            if (data.breakStart && !data.breakEnd) {
-                currentBreaks.push(data);
-            } else if (data.breakStart && data.breakEnd) {
-                completedBreaks.push(data);
-            }
-        });
-        
-        // Get long break notifications
-        const notifSnap = await db.collection('notifications')
-            .where('type', '==', 'long_break')
-            .where('date', '==', today)
-            .get();
-        
-        const longBreaks = [];
-        notifSnap.forEach(d => longBreaks.push(d.data()));
-        
-        main.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background:#fef3c7;">☕</div>
-                    <div class="stat-value" style="color:#f59e0b;">${currentBreaks.length}</div>
-                    <div class="stat-label">On Break Now</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background:#fee2e2;">⚠️</div>
-                    <div class="stat-value" style="color:#ef4444;">${longBreaks.length}</div>
-                    <div class="stat-label">Long Breaks (>1h)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background:#d1fae5;">✅</div>
-                    <div class="stat-value" style="color:#10b981;">${completedBreaks.length}</div>
-                    <div class="stat-label">Break Completed</div>
-                </div>
-            </div>
-            
-            ${currentBreaks.length > 0 ? `
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">☕ Currently On Break</span>
-                        <span class="badge" style="background:#fef3c7;color:#f59e0b;">${currentBreaks.length}</span>
-                    </div>
-                    ${currentBreaks.map(b => `
-                        <div style="padding:15px;background:#fef3c7;border-radius:10px;margin-bottom:10px;">
-                            <strong>${b.employeeName}</strong>
-                            <p style="font-size:13px;color:#666;margin-top:5px;">Break started: ${b.breakStart}</p>
-                            <button class="btn btn-info btn-sm" style="margin-top:8px;" onclick="callEmp('${b.phone}')">📞 Call</button>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : ''}
-            
-            ${longBreaks.length > 0 ? `
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">⚠️ Long Break Alerts</span>
-                        <span class="badge badge-absent">${longBreaks.length}</span>
-                    </div>
-                    ${longBreaks.map(b => `
-                        <div style="padding:15px;background:#fee2e2;border-radius:10px;margin-bottom:10px;">
-                            <strong>${b.employeeName}</strong>
-                            <p style="font-size:13px;color:#666;margin-top:5px;">${b.message}</p>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : ''}
-            
-            ${completedBreaks.length > 0 ? `
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">📋 Completed Breaks Today</span>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Start</th>
-                                    <th>End</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${completedBreaks.map(b => {
-                                    const isLong = (b.breakDuration || 0) > 1;
-                                    return `
-                                        <tr>
-                                            <td><strong>${b.employeeName}</strong></td>
-                                            <td>${b.breakStart}</td>
-                                            <td>${b.breakEnd}</td>
-                                            <td>${(b.breakDuration || 0).toFixed(2)}h</td>
-                                            <td><span class="badge ${isLong ? 'badge-absent' : 'badge-present'}">${isLong ? '⚠️ Long' : '✅ Normal'}</span></td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            ` : ''}
-            
-            ${currentBreaks.length === 0 && completedBreaks.length === 0 ? `
-                <div class="card">
-                    <p style="color:#666;text-align:center;">No breaks recorded today</p>
-                </div>
-            ` : ''}
-        `;
-    } catch (error) {
-        console.error('Breaks error:', error);
-        showToast('Error loading breaks');
-    }
-}
-
-// Add break menu item for HR
-function addBreakMenuItem() {
-    const menu = document.getElementById('menu');
-    if (currentUser.role === 'hr' && menu) {
-        // Check if break menu already exists
-        if (!document.getElementById('menu-breaks')) {
-            const breakItem = document.createElement('li');
-            breakItem.className = 'menu-item';
-            breakItem.id = 'menu-breaks';
-            breakItem.onclick = function() { showPage('breaks'); };
-            breakItem.innerHTML = '<span class="menu-icon">☕</span> Break Monitoring';
-            menu.appendChild(breakItem);
-        }
-    }
-}
-
-// Update showPage function to handle breaks
-function updateShowPageForBreaks() {
-    const oldShowPage = showPage;
-    showPage = function(page) {
-        if (page === 'breaks' && currentUser.role === 'hr') {
-            currentPage = page;
-            document.getElementById('pageTitle').textContent = 'Break Monitoring';
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            const el = document.getElementById('menu-breaks');
-            if (el) el.classList.add('active');
-            toggleSidebar(false);
-            showBreaks();
-        } else {
-            oldShowPage(page);
-        }
-    };
-}
-
-// Modify checkIn to include break fields
-async function checkInWithBreak() {
-    const today = new Date().toISOString().split('T')[0];
-    
-    document.getElementById('photoInput').click();
-    document.getElementById('photoInput').onchange = async function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        showToast('📸 Uploading photo...');
-        const reader = new FileReader();
-        reader.onload = async function(ev) {
-            const photoData = ev.target.result;
-            
-            try {
-                const base64 = photoData.split(',')[1];
-                await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        photo: base64,
-                        employeeId: currentUser.id,
-                        employeeName: currentUser.name,
-                        photoType: 'checkin',
-                        attendanceDate: today,
-                        mimeType: 'image/jpeg'
-                    })
-                });
-            } catch (err) {}
-            
-            await db.collection('attendance').add({
-                employeeId: currentUser.id,
-                employeeName: currentUser.name,
-                date: today,
-                checkInTime: new Date().toLocaleTimeString(),
-                checkInPhoto: photoData,
-                status: 'present',
-                breakStart: null,
-                breakEnd: null,
-                breakDuration: 0,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            showToast('✅ Checked in!');
-            showEmpDashboard();
-        };
-        reader.readAsDataURL(file);
-    };
-}
-
-// Initialize break features
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        addBreakMenuItem();
-        updateShowPageForBreaks();
-    }, 1000);
-});
-
-console.log('✅ Break tracking system loaded');
-                        </script>
 </body>
 </html>
